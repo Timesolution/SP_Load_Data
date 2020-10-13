@@ -1,0 +1,27 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SP_Load_Data.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="FTP" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ftp://waws-prod-bn1-017.ftp.azurewebsites.windows.net</Value>
+    </Setting>
+    <Setting Name="Pass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Timesol1</Value>
+    </Setting>
+    <Setting Name="rutaFTP" Type="System.String" Scope="User">
+      <Value Profile="(Default)">/site/wwwroot/Informes/</Value>
+    </Setting>
+    <Setting Name="rutaReporte" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Users\black\Documents\Trabajo\Proyectos\Gestion.ServiciosDeReportes\SP_Load_Data_SVR\SP_Load_Data\SP_Load_Data\Reportes\</Value>
+    </Setting>
+    <Setting Name="User" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">munozmarchesigestion\timesolutionftp</Value>
+    </Setting>
+    <Setting Name="Path_Log" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\Proyectos\Reportes\Gestion.ServiciosDeReportes\SP_Load_Data_SVR\Log\</Value>
+    </Setting>
+    <Setting Name="rutaDescarga" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Proyectos\Reportes\Gestion.ServiciosDeReportes\SP_Load_Data_SVR\SP_Load_Data\Descarga Archivos\</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
