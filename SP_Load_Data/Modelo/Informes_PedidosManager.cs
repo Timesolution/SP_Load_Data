@@ -75,5 +75,15 @@ namespace SP_Load_Data.Modelo
             }
             return false;
         }
+
+        public bool EsImportacionDeArticulos(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 7)
+            {
+                _appLog.LogInfo("Voy a generar la Importacion de Articulos desde Base Externa con Id " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
     }
 }

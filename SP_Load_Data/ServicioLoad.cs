@@ -89,6 +89,10 @@ namespace SP_Load_Data
                     {
                         procesar.generarInformeDeListaDePrecios(informePedido);//usa el mismo porque es el mismo reporte solo que con formato diferente
                     }
+                    if (informes_PedidosManager.EsImportacionDeArticulos(informePedido))
+                    {
+                        procesar.ImportarArticulosBaseExterna(informePedido);//usa el mismo porque es el mismo reporte solo que con formato diferente
+                    }
                 }
             }
             catch (Exception ex)

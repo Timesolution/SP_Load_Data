@@ -3,19 +3,19 @@
   <Profiles />
   <Settings>
     <Setting Name="FTP" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">ftp://waws-prod-bn1-017.ftp.azurewebsites.windows.net</Value>
+      <Value Profile="(Default)">158.69.112.103</Value>
     </Setting>
     <Setting Name="Pass" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Timesol1</Value>
     </Setting>
     <Setting Name="rutaFTP" Type="System.String" Scope="User">
-      <Value Profile="(Default)">/site/wwwroot/Informes/</Value>
+      <Value Profile="(Default)">/httpdocs/Informes/</Value>
     </Setting>
     <Setting Name="rutaReporte" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\Users\black\Documents\Trabajo\Proyectos\Gestion.ServiciosDeReportes\SP_Load_Data_SVR\SP_Load_Data\SP_Load_Data\Reportes\</Value>
     </Setting>
     <Setting Name="User" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">munozmarchesigestion\timesolutionftp</Value>
+      <Value Profile="(Default)">testingts</Value>
     </Setting>
     <Setting Name="Path_Log" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\Proyectos\Reportes\Gestion.ServiciosDeReportes\SP_Load_Data_SVR\Log\</Value>
