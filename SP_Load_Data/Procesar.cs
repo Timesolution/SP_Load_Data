@@ -1104,9 +1104,7 @@ namespace SP_Load_Data
                         int total = articulosImportar.Rows.Count;
                         int contGood = 0;
                         int contBad = 0;
-                        //int contadorMarcasNoAgregadas = 0;
                         string mensajeResultado = "";
-                        //string messageError = "";
                         List<int> idsImportadosdeBaseExterna = new List<int>();
                         List<int> NoAgregados = new List<int>();
                         List<int> ListaIdGenerados = new List<int>();
@@ -1162,11 +1160,7 @@ namespace SP_Load_Data
                                             if (VerificarSubGrupo != null && VerificarSubGrupo.id > 0)
                                             {
                                                 temp[5] = VerificarSubGrupo.id;
-                                                //else
-                                                //{
-                                                //    List<SubGrupo> listaSubgrupos = controladorArticulo.obtenerSubGrupoByGrupo(Convert.ToInt32(temp[4]));
-                                                //    temp[5] = listaSubgrupos[0].id;
-                                                //}
+
                                                 if (ControladorArticulosEntity.VerificarMarcarById(Convert.ToInt32(rowImportar[16])))
                                                 {
                                                     temp[6] = Convert.ToDecimal(rowImportar[6]); //costo
@@ -1236,11 +1230,6 @@ namespace SP_Load_Data
                                                     rowMensaje[1] = "La marca no existe en la base de destino.";
                                                     dtArticulosMensajes.Rows.Add(rowMensaje);
                                                     contBad++;
-
-                                                    //messageError = ("La marca no existe en la base de destino.");
-                                                    //UpdateFieldErrorArticuloById(Convert.ToInt32(rowImportar[0]), messageError);
-                                                    //NoAgregados.Add(Convert.ToInt32(rowImportar[0]));
-                                                    //contBad++;
                                                 }
                                             }
                                             else
@@ -1250,10 +1239,6 @@ namespace SP_Load_Data
                                                 rowMensaje[1] = "El subgrupo no existe en la base de destino.";
                                                 dtArticulosMensajes.Rows.Add(rowMensaje);
                                                 contBad++;
-                                                //messageError = ("El subgrupo no existe en la base de destino.");
-                                                //UpdateFieldErrorArticuloById(Convert.ToInt32(rowImportar[0]), messageError);
-                                                //NoAgregados.Add(Convert.ToInt32(rowImportar[0]));
-                                                //contBad++;
                                             }
                                         }
                                         else
@@ -1263,10 +1248,6 @@ namespace SP_Load_Data
                                             rowMensaje[1] = "El grupo no existe en la base de destino.";
                                             dtArticulosMensajes.Rows.Add(rowMensaje);
                                             contBad++;
-                                            //messageError = ("El grupo no existe en la base de destino.");
-                                            //UpdateFieldErrorArticuloById(Convert.ToInt32(rowImportar[0]), messageError);
-                                            //NoAgregados.Add(Convert.ToInt32(rowImportar[0]));
-                                            //contBad++;
                                         }
                                     }
                                     else
@@ -1276,10 +1257,6 @@ namespace SP_Load_Data
                                         rowMensaje[1] = "Codigo de barra ya existe en la base destino.";
                                         dtArticulosMensajes.Rows.Add(rowMensaje);
                                         contBad++;
-                                        //messageError = ("Codigo de barra ya existe en la base destino.");
-                                        //UpdateFieldErrorArticuloById(Convert.ToInt32(rowImportar[0]), messageError);
-                                        //NoAgregados.Add(Convert.ToInt32(rowImportar[0]));
-                                        //contBad++;
                                     }
                                 }
                                 else
@@ -1289,18 +1266,9 @@ namespace SP_Load_Data
                                     rowMensaje[1] = "Codigo de articulo ya existe en la base destino.";
                                     dtArticulosMensajes.Rows.Add(rowMensaje);
                                     contBad++;
-                                    //messageError = ("Codigo de articulo ya existe en la base destino.");
-                                    //UpdateFieldErrorArticuloById(Convert.ToInt32(rowImportar[0]), messageError);
-                                    //NoAgregados.Add(Convert.ToInt32(rowImportar[0]));
-                                    //contBad++;
                                 }
-                                //}
-                                //else
-                                //    break;
                             }
                         }
-                        else
-                        //return mensajeResultado;
 
                         if (contGood > 0)
                         {
@@ -1344,49 +1312,16 @@ namespace SP_Load_Data
                             {
                                 int marcasImportar = AgregarMarcas(ListaArticulosMarca, dtArticulosMensajes);
 
-                                //if (marcasImportar == 0 || marcasImportar > 0)
-                                //{
-                                //if (marcasImportar > 0)
-                                //    contadorMarcasNoAgregadas++;
-
                                 //AGREGRO EL ARANCEL IMPORTACION Y SIM
                                 int agrego = AgregarArancelSim(ListaArancelSim, dtArticulosMensajes);
-                                //if (agrego > 0)
-                                //{
+                                
                                 //AGREGO EL STOCK
                                 int agregoStock = AgregarStock(ListaStockMinimo, dtArticulosMensajes);
-                                //if (agregoStock > 0)
-                                //{
+                                
                                 //AGREGO ALERTA
                                 int agregoAlerta = AgregarAlerta(ListaArancelSim, dtArticulosMensajes);
-                                //if (agregoAlerta > 0)
-                                //{
+                             
                                 dbContextTransaction.Commit();
-                                //}
-                                //else
-                                //{
-                                //    Log.EscribirSQL(1, "ERROR", "No se pudo generar las alertas de los articulos insertados.ControladorImportacionArticulo.");
-                                //    dbContextTransaction.Rollback();
-                                //}
-                                //}
-                                //else
-                                //{
-                                //    Log.EscribirSQL(1, "ERROR", "No se pudo agregar el stock de los articulos insertados. ControladorImportacionArticulo.");
-                                //    dbContextTransaction.Rollback();
-                                //}
-                                //}
-                                //else
-                                //{
-
-                                //    Log.EscribirSQL(1, "ERROR", "No se pudo agregar el ArancelSim los ID de los articulos insertados. Ubicacion: ControladorImportacionArticulo.");
-                                //    dbContextTransaction.Rollback();
-                                //}
-                                //}
-                                //else
-                                //{
-                                //    Log.EscribirSQL(1, "ERROR", "marcas agregar");
-                                //    dbContextTransaction.Rollback();
-                                //}
                             }
                             else
                             {
@@ -1403,14 +1338,12 @@ namespace SP_Load_Data
                         }
                         setearMensajesBaseExterna(dtArticulosMensajes);
                         actualizarEstadoInforme(ip.Id);
-                        //return mensajeResultado;
                     }
                     catch (Exception ex)
                     {
                         setearMensajesBaseExterna(dtArticulosMensajes);
                         dbContextTransaction.Rollback();
                         ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "CATCH: Error en Importacion de Articulos. Metodo: ImportarArticulosGestion. Excecpion: " + ex.Message, "");
-                        //return null;
                     }
                     finally
                     {
