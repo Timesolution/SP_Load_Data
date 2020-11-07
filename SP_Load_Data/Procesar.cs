@@ -17,7 +17,6 @@ namespace SP_Load_Data
 {
     class Procesar
     {
-
         string server = Settings.Default.FTP;
         string user = Settings.Default.User;
         string pass = Settings.Default.Pass;
@@ -201,7 +200,6 @@ namespace SP_Load_Data
                                     }
                                 }
                             }
-
 
                         }
                         else
@@ -618,12 +616,14 @@ namespace SP_Load_Data
 
                 //var list = this.dbGestionC.IMP_ARTICULOS.ToList().Skip(vuelta * 500).Take(500);
                 var list = this.dbGestionC.IMP_ARTICULOS.ToList();
-                int primeraVuelta = 1;
+                //int primeraVuelta = 1;
+                int contadorRegistros = 0;
 
                 foreach (IMP_ARTICULOS articulo in list)
                 {
-                    DataRow row = dt.NewRow();
+                    contadorRegistros++;
 
+                    DataRow row = dt.NewRow();
                     row["id"] = articulo.id;
                     row["codigo"] = articulo.codigo;
                     row["descripcion"] = articulo.descripcion;
@@ -650,29 +650,31 @@ namespace SP_Load_Data
                     row["Arancel"] = articulo.Arancel;
                     row["Sim"] = articulo.SIM;
 
-                    if (primeraVuelta == 1)
-                    {
-                        dt.Rows.Add(row);
-                        primeraVuelta = 0;
-                    }
-                    else
-                    {
-                        if (VerificarCodigoParaNoRepetirloEnLaTablaTemporal(articulo.codigo, dt))
-                        {
-                            dt.Rows.Add(row);
-                        }
-                        else
-                        {
-                            Log.EscribirSQL(1, "ERROR", "ELSE: El articulo con codigo " + articulo.codigo + " esta repetido en la base externa");
-                        }
-                    }
+                    //if (primeraVuelta == 1)
+                    //{
+                    dt.Rows.Add(row);
 
+                    //primeraVuelta = 0;
+                    //}
+                    //else
+                    //{
+                    //    if (VerificarCodigoParaNoRepetirloEnLaTablaTemporal(articulo.codigo, dt))
+                    //    {
+                    //        dt.Rows.Add(row);
+                    //    }
+                    //    else
+                    //    {
+                    //        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR,"ERROR", "ELSE: El articulo con codigo " + articulo.codigo + " esta repetido en la base externa");
+                    //    }
+                    //}
                 }
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Encontro " + contadorRegistros.ToString() + " articulos para exportar.");
                 return dt;
             }
             catch (Exception Ex)
             {
-                Log.EscribirSQL(1, "ERROR", "Ocurrió un error en obtenerClienteReferido. Excepción: " + Ex.Message);
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "Ocurrió un error en Procesar.GetArticulosImportaciones. Excepción: " + Ex.Message);
                 return null;
             }
         }
@@ -780,7 +782,6 @@ namespace SP_Load_Data
             {
                 ControladorArticulosEntity controladorArticulosEntity = new ControladorArticulosEntity();
 
-                //int i = 0;
                 if (ListaArancelSim.Count > 0)
                 {
                     foreach (var item in ListaArancelSim)
@@ -793,12 +794,12 @@ namespace SP_Load_Data
                             {
                                 DataRow row = dtArticulosMensajes.Rows.Find(item.idArticulo);
                                 row[1] += " Pero no se pudo agregar el SIM/STOCK al articulo.";
-                                Log.EscribirSQL(1, "ERROR", "No se pudo agregar el SIM al articulo. Metodo:ControladorImportacionArticulos.ImportarArticulosGestion");
+                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "No se pudo agregar el SIM al articulo. Metodo:ControladorImportacionArticulos.ImportarArticulosGestion");
                             }
                         }
                         else
                         {
-                            Log.EscribirSQL(1, "ERROR", "No se pudo agregar el SIM al articulo. Metodo:ControladorImportacionArticulos.ImportarArticulosGestion");
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "No se pudo agregar el SIM al articulo. Metodo:ControladorImportacionArticulos.ImportarArticulosGestion");
                         }
                     }
                 }
@@ -808,7 +809,7 @@ namespace SP_Load_Data
             }
             catch (Exception ex)
             {
-                Log.EscribirSQL(1, "ERROR", "Ocurrio un error en ControladorImportacionClientes.AgregarArancelSim. Mensaje: " + ex.Message);
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "Ocurrio un error en ControladorImportacionClientes.AgregarArancelSim. Mensaje: " + ex.Message);
                 return -1;
             }
         }
@@ -822,11 +823,10 @@ namespace SP_Load_Data
         {
             try
             {
-                //string mensajeError = "";
                 ControladorArticulosEntity controladorArticulosEntity = new ControladorArticulosEntity();
                 List<Articulos_Marca> listaMarcas = new List<Articulos_Marca>();
                 int noAgregoMarca = 0;
-                //Task<int> i = null;
+
                 foreach (var item in ListaArticulosMarca)
                 {
                     string CodigoAuxiliar = item.CodigoCot;
@@ -859,15 +859,17 @@ namespace SP_Load_Data
                         //noAgregoMarca++;
                         //mensajeError = ("El articulo fue ingresado, pero no se pudo agregar la marca. Podra agregarlo desde el sistema.");
                         //UpdateFieldErrorArticuloByCod(CodigoAuxiliar, mensajeError);
-                        Log.EscribirSQL(1, "ERROR", "No se pudo agregar la marca con el articulo. Metodo:ControladorImportacionArticulos.AgregarMarcas");
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "No se pudo agregar la marca con el articulo. Ubicacion: Procesar.cs .Metodo:AgregarMarcas.AgregarMarcas");
                     }
+                    else
+                        noAgregoMarca = 1;
                     //}
                 }
                 return noAgregoMarca;
             }
             catch (Exception ex)
             {
-                Log.EscribirSQL(1, "ERROR", "Ocurrio un error en ControladorImportacionClientes.AgregarMarcas. Mensaje: " + ex.Message);
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "Ocurrio un error en Procesar.AgregarMarcas. Excepcion: " + ex.Message);
                 return -1;
             }
         }
@@ -913,7 +915,7 @@ namespace SP_Load_Data
             }
             catch (Exception ex)
             {
-                Log.EscribirSQL(1, "ERROR", "CATCH: No se pudo obtener los ID de los articulos insertados. ControladorImportacionArticulos.cs. Metodo: cargarIdsGenerados. Mensaje: " + ex.Message);
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "CATCH: No se pudo obtener los ID de los articulos insertados. Ubicacion: Procesar.cs. Metodo: cargarIdsGenerados. Mensaje: " + ex.Message);
                 return -1;
             }
         }
@@ -936,20 +938,19 @@ namespace SP_Load_Data
                     result.Error = row[1].ToString();
                 }
 
-                //Seteo mensajes de Confirmacion
-                foreach (DataRow row in dtArticulosMensajes.Rows)
-                {
-                    int id = Convert.ToInt32(row[0]);
-                    var result = dbGestionA.IMP_ARTICULOS.Where(x => x.id != id).FirstOrDefault();
-                    if (result == null)
-                        result.Error = "OK";
-                }
-
                 dbGestionA.SaveChanges();
+                //Seteo mensajes de Confirmacion
+                //foreach (DataRow row in dtArticulosMensajes.Rows)
+                //{
+                //    int id = Convert.ToInt32(row[0]);
+                //    var result = dbGestionA.IMP_ARTICULOS.Where(x => x.id != id).FirstOrDefault();
+                //    if (result == null)
+                //        result.Error = "OK";
+                //}
             }
             catch (Exception ex)
             {
-                Log.EscribirSQL(1, "ERROR", "CATCH: no se pudo setear los mensajes en la columna ERROR de la base externa. Ubicacion: ControladorImportacionArticulo.setearMensajesBaseExterna. Mensaje: " + ex.Message);
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: no se pudo setear los mensajes en la columna ERROR de la base externa. Ubicacion: Procesar.setearMensajesBaseExterna. Excepcion: " + ex.Message,"");
             }
         }
 
@@ -985,7 +986,7 @@ namespace SP_Load_Data
             }
             catch (Exception ex)
             {
-                Log.EscribirSQL(1, "ERROR", "CATCH: ControladorImportacionArticulos.AgregarAlerta. Mensaje: " + ex.Message);
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "CATCH: Ocurrio un error. Ubicacion: Procesar.AgregarAlerta. Mensaje: " + ex.Message);
                 return -1;
             }
         }
@@ -1087,7 +1088,7 @@ namespace SP_Load_Data
         #endregion
 
         #region Importacion
-        public void ImportarArticulosBaseExterna(Informes_Pedidos ip)
+        public int ImportarArticulosBaseExterna(Informes_Pedidos ip)
         {
             using (var dbGestion = new ModeloImportacion())
             {
@@ -1104,7 +1105,7 @@ namespace SP_Load_Data
                         int total = articulosImportar.Rows.Count;
                         int contGood = 0;
                         int contBad = 0;
-                        string mensajeResultado = "";
+                        //string mensajeResultado = "";
                         List<int> idsImportadosdeBaseExterna = new List<int>();
                         List<int> NoAgregados = new List<int>();
                         List<int> ListaIdGenerados = new List<int>();
@@ -1125,6 +1126,7 @@ namespace SP_Load_Data
                                 dtArticulosMensajes.Columns.Add();
                             }
 
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Voy a recorrer el 'forEach' para armar el DataTable");
                             foreach (DataRow rowImportar in articulosImportar.Rows)
                             {
                                 Articulos_StockMinimo articulos_StockMinimo = new Articulos_StockMinimo();
@@ -1269,7 +1271,7 @@ namespace SP_Load_Data
                                 }
                             }
                         }
-
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Termino el 'forEach' de armar el DataTable, va a insertar en la tabla articulos.");
                         if (contGood > 0)
                         {
                             conn1.Open();
@@ -1307,46 +1309,56 @@ namespace SP_Load_Data
 
                             bc.WriteToServer(dtArticulos);// GUARDO EN LA BASE
 
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Se insertaron " + dtArticulos.Rows.Count + " registros en la tabla Articulos. Voy a insertar en las demas tablas.");
+
                             int cargoIdsInsertados = cargarIdsGenerados(ListaArticulosMarca, ListaArancelSim); // el ListaArancelSim.id contiene el id del articulo de la base de externa, me sirve setear mensajes en la base externa
                             if (cargoIdsInsertados > 0)
                             {
+                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto las Marcas.");
                                 int marcasImportar = AgregarMarcas(ListaArticulosMarca, dtArticulosMensajes);
 
                                 //AGREGRO EL ARANCEL IMPORTACION Y SIM
+                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto el ARANCEL IMPORTACION y SIM.");
                                 int agrego = AgregarArancelSim(ListaArancelSim, dtArticulosMensajes);
-                                
+
                                 //AGREGO EL STOCK
+                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto el Stock.");
                                 int agregoStock = AgregarStock(ListaStockMinimo, dtArticulosMensajes);
-                                
+
                                 //AGREGO ALERTA
+                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto las Alertas.");
                                 int agregoAlerta = AgregarAlerta(ListaArancelSim, dtArticulosMensajes);
-                             
-                                dbContextTransaction.Commit();
+
+                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Comiteo la transacion.");
+                                //dbContextTransaction.Commit();
                             }
                             else
                             {
-                                dbContextTransaction.Rollback();
-                                Log.EscribirSQL(1, "ERROR", "No se pudo cargar los ID de los articulos insertados");
+                                //dbContextTransaction.Rollback();
+                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "No se pudo cargar los ID de los articulos insertados");
                             }
 
-                            if (contGood > 0)
-                            {
-                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "INFO: Se importaron " + contGood.ToString() + " articulos de " + total,"");
-                                mensajeResultado = "Se importaron " + contGood.ToString() + " articulos de " + total;
-                                //EliminarArticulosBaseExterna(NoAgregados);
-                            }
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Se importaron " + contGood.ToString() + " articulos de " + total, "");
+                            //mensajeResultado = "Se importaron " + contGood.ToString() + " articulos de " + total;
+                            //EliminarArticulosBaseExterna(NoAgregados);
                         }
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a setear los comentarios en la base externa", "");
+
                         setearMensajesBaseExterna(dtArticulosMensajes);
-                        actualizarEstadoInforme(ip.Id);
+                        return 1;
                     }
                     catch (Exception ex)
                     {
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a setear los comentarios en la base externa", "");
                         setearMensajesBaseExterna(dtArticulosMensajes);
-                        dbContextTransaction.Rollback();
+                        //dbContextTransaction.Rollback();
                         ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "CATCH: Error en Importacion de Articulos. Metodo: ImportarArticulosGestion. Excecpion: " + ex.Message, "");
+                        return -1;
                     }
                     finally
                     {
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a actualizar el estado del informe", "");
+                        actualizarEstadoInforme(ip.Id);
                         conn1.Close();
                     }
                 }

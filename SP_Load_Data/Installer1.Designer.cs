@@ -45,8 +45,8 @@
             // serviceInstaller1
             // 
             this.serviceInstaller1.Description = "Servicio que genera informes pedidos";
-            this.serviceInstaller1.DisplayName = "TS_GeneradorInformes_GoPet";
-            this.serviceInstaller1.ServiceName = "TS_GeneradorInformes_GoPet";
+            this.serviceInstaller1.DisplayName = "TS_GeneradorInformes_IdGroup";
+            this.serviceInstaller1.ServiceName = "TS_GeneradorInformes_IdGroup";
             this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             this.serviceInstaller1.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.serviceInstaller1_AfterInstall);
             // 

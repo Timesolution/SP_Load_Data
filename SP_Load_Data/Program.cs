@@ -17,16 +17,16 @@ namespace SP_Load_Data
             try
             {
                 //Test
-                ServicioLoad servicio = new ServicioLoad();
-                servicio.Inicio();
+                //ServicioLoad servicio = new ServicioLoad();
+                //servicio.Inicio();
 
                 //Produccion
-                //ServiceBase[] ServicesToRun;
-                //ServicesToRun = new ServiceBase[]
-                //{
-                //    new Service1()
-                //};
-                //ServiceBase.Run(ServicesToRun);
+                ServiceBase[] ServicesToRun;
+                ServicesToRun = new ServiceBase[]
+                {
+                    new Service1()
+                };
+                ServiceBase.Run(ServicesToRun);
             }
             catch (Exception ex)
             {
@@ -39,8 +39,6 @@ namespace SP_Load_Data
                 }
                 catch { }
             }
-            
-            
         }
     }
 }
