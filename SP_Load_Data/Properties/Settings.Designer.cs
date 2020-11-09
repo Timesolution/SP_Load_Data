@@ -25,7 +25,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ftp://waws-prod-bn1-017.ftp.azurewebsites.windows.net")]
+        [global::System.Configuration.DefaultSettingValueAttribute("158.69.112.103")]
         public string FTP {
             get {
                 return ((string)(this["FTP"]));
@@ -43,7 +43,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("/site/wwwroot/Informes/")]
+        [global::System.Configuration.DefaultSettingValueAttribute("/httpdocs/Informes/")]
         public string rutaFTP {
             get {
                 return ((string)(this["rutaFTP"]));
@@ -68,7 +68,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("munozmarchesigestion\\timesolutionftp")]
+        [global::System.Configuration.DefaultSettingValueAttribute("testingts")]
         public string User {
             get {
                 return ((string)(this["User"]));

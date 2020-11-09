@@ -11,11 +11,13 @@ using Gestion_Api.Entitys;
 using Gestion_Api.Modelo;
 using SP_Load_Data.Modelo;
 using SP_Load_Data.Modelo.Logger;
+using System.Data;
 
 namespace SP_Load_Data
 {
     class ServicioLoad
     {
+        private int flagInicio = 0;
         private IAppLog _logger;
         public static CLogNet CLog;
         string pathlog = Settings.Default.Path_Log;
@@ -31,30 +33,34 @@ namespace SP_Load_Data
 
         public void InicioThreadProcesamiento()
         {
-            while (true)
+            if(flagInicio == 0)
             {
-                try
+                if (!this.InicializarLog())
+                    return;
+                while (true)
                 {
-                    this.Inicio();
-                    Thread.Sleep(1000);
-                    if (this.thProceso == null || !this.thProceso.IsAlive)
+                    try
                     {
-                        this.thProceso = new Thread(new ThreadStart(Inicio));
-                        this.thProceso.Start();
+                        this.Inicio();
+                        Thread.Sleep(1000);
+                        if (this.thProceso == null || !this.thProceso.IsAlive)
+                        {
+                            this.thProceso = new Thread(new ThreadStart(Inicio));
+                            this.thProceso.Start();
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
+                    catch (Exception ex)
+                    {
 
+                    }
+                    Thread.Sleep(10000);
                 }
-                Thread.Sleep(10000);
             }
         }
 
         public void Inicio()
         {
-            if (!this.InicializarLog())
-                return;
+            
             Procesar procesar = new Procesar();
             try
             {
@@ -89,11 +95,25 @@ namespace SP_Load_Data
                     {
                         procesar.generarInformeDeListaDePrecios(informePedido);//usa el mismo porque es el mismo reporte solo que con formato diferente
                     }
+                    if (informes_PedidosManager.EsImportacionDeArticulos(informePedido))
+                    {
+                        Procesar obj = new Procesar();
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a procesar los articulos de la base externa", "");
+                        int exito = procesar.ImportarArticulosBaseExterna(informePedido);//usa el mismo porque es el mismo reporte solo que con formato diferente
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Termino importacion de articulos desde la base externa.", "");
+                        //ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a setear los comentarios en la base externa", "");
+                        //obj.setearMensajesBaseExterna(dtMensajes);
+
+                        //ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a actualizar el estado del informe", "");
+                        //obj.actualizarEstadoInforme(informePedido.Id);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "Error en Importar Load Data: " + ex.Message, "");
+                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: En Importar Load Data. Excepcion: " + ex.Message, "");
                 return;
             }
         }
@@ -104,7 +124,8 @@ namespace SP_Load_Data
             {
                 ServicioLoad.CLog = new CLogNet(pathlog + logname);
                 ServicioLoad.CLog.NameProcess = "Importador";
-                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Inicia Importador Información", "");
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Inicia Servicio", "Empieza el servicio");
+                flagInicio = 1;
             }
             catch (Exception ex)
             {
