@@ -85,5 +85,15 @@ namespace SP_Load_Data.Modelo
             }
             return false;
         }
+
+        public bool EsReporteArticulosFiltrados(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 8)
+            {
+                _appLog.LogInfo("Va a generar el Reporte de Ventas filtradas con ID: " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
     }
 }

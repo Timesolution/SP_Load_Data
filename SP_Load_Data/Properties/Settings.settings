@@ -3,25 +3,25 @@
   <Profiles />
   <Settings>
     <Setting Name="FTP" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">158.69.112.103</Value>
+      <Value Profile="(Default)">ftp://51.222.29.204</Value>
     </Setting>
     <Setting Name="Pass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Timesol1</Value>
+      <Value Profile="(Default)">Time_Sol1!</Value>
     </Setting>
     <Setting Name="rutaFTP" Type="System.String" Scope="User">
       <Value Profile="(Default)">/httpdocs/Informes/</Value>
     </Setting>
     <Setting Name="rutaReporte" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\Users\black\Documents\Trabajo\Proyectos\Gestion.ServiciosDeReportes\SP_Load_Data_SVR\SP_Load_Data\SP_Load_Data\Reportes\</Value>
+      <Value Profile="(Default)">C:\Users\Administrator\Documents\Servicios TimeSolution\Servicio Reportes\TestDesarrollo\Reportes\</Value>
     </Setting>
     <Setting Name="User" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">testingts</Value>
+      <Value Profile="(Default)">desarrollo</Value>
     </Setting>
     <Setting Name="Path_Log" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Proyectos\Reportes\Gestion.ServiciosDeReportes\SP_Load_Data_SVR\Log\</Value>
+      <Value Profile="(Default)">C:\Users\Administrator\Documents\Servicios TimeSolution\Servicio Reportes\TestDesarrollo\Log\</Value>
     </Setting>
     <Setting Name="rutaDescarga" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\Proyectos\Reportes\Gestion.ServiciosDeReportes\SP_Load_Data_SVR\SP_Load_Data\Descarga Archivos\</Value>
+      <Value Profile="(Default)">C:\Users\Administrator\Documents\Servicios TimeSolution\Servicio Reportes\TestDesarrollo\Descarga Archivos\</Value>
     </Setting>
   </Settings>
 </SettingsFile>
