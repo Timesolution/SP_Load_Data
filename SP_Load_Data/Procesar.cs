@@ -12,12 +12,15 @@ using System.Data;
 using Gestion_Api.Entitys.ModeloImportacion;
 using Gestor_Solution.Controladores;
 using Gestion_Api.AccesoDatos;
+using System.Web;
 
 namespace SP_Load_Data
 {
-    class Procesar
-    {
-        string server = Settings.Default.FTP;
+    class Procesar { 
+
+
+        public HttpResponse Response { get; }
+    string server = Settings.Default.FTP;
         string user = Settings.Default.User;
         string pass = Settings.Default.Pass;
 
@@ -464,7 +467,7 @@ namespace SP_Load_Data
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta del reporte es: " + Settings.Default.rutaReporte + "Reporte_VentasFiltradas.rdlc", "");
                     string nombreArchivoGenerado = contReport.GenerarReporteVentasFiltradas(Settings.Default.rutaDescarga + informePedido.Id + '/', Settings.Default.rutaReporte + "Reporte_VentasFiltradas.rdlc", infXML.FechaDesde, infXML.FechaHasta, infXML.Sucursal, infXML.Empresa, infXML.Tipo,
-                                                                                infXML.Cliente,infXML.TipoCliente, infXML.Documento, infXML.Anuladas, infXML.ListaPrecio, infXML.Vendedor, infXML.FormaPago, Convert.ToInt32(informePedido.Id));
+                                                                                infXML.Cliente, infXML.TipoCliente, infXML.Documento, infXML.Anuladas, infXML.ListaPrecio, infXML.Vendedor, infXML.FormaPago, Convert.ToInt32(informePedido.Id));
                     if (!string.IsNullOrEmpty(nombreArchivoGenerado))
                     {
                         List<FileInfo> archivosSubir = new List<FileInfo>();
@@ -547,6 +550,85 @@ namespace SP_Load_Data
                 {
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error deserializando informe XML " + informePedido.Id, "");
                 }
+            }
+        }
+
+        public void GenerarReporteEcommerceArticulos(Informes_Pedidos informePedido)
+        {
+            try
+            {
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .txt con el informe " + informePedido.Id, "");
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+
+
+                ///Creo el directiorio
+                var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
+
+                if (!directory.Exists)
+                {
+                    directory.Create();
+                }
+               
+                controladorFunciones contFunciones = new controladorFunciones();
+
+                var fecha = DateTime.Today;
+                var archivo = directory.FullName+"Articulos" + ".txt";
+                StreamWriter sw = new StreamWriter(archivo, false, Encoding.ASCII);
+
+                var dtArticulosActivos = controladorArticulo.obtenerArticulosActivosTXT(); ; //OBTENGO LAS CUENTAS CORRIENTES
+                string registro = string.Empty;
+
+                DataTable dtCCExportacion = new DataTable(); //CREO TABLA PARA LLENAR
+
+                string registros = "";
+                foreach (DataRow rowaGenerar in dtArticulosActivos.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
+                {
+
+                    //Gestion_Api.Entitys.articulo artEnt = this.contArtEnt.obtenerArticuloEntity(Convert.ToInt32(rowaGenerar["id"]));
+                    System.Data.DataRow rowArchivo = dtCCExportacion.NewRow();
+
+                    registros += rowaGenerar[0].ToString() + "|";
+                    registros += rowaGenerar[1].ToString() + "|";
+                    registros += rowaGenerar[2].ToString() + "|";
+                    registros += rowaGenerar[3].ToString() + "|";
+                    registros += rowaGenerar[4].ToString() + "|";
+                    registros += rowaGenerar[5].ToString() + "|";
+                    registros += rowaGenerar[6].ToString() + "|";
+                    registros += rowaGenerar[7].ToString() + "|";
+                    registros += rowaGenerar[8].ToString() + "|";
+                    registros += rowaGenerar[9].ToString() + "|";
+                    registros += rowaGenerar[10].ToString() + "|";
+                    registros += rowaGenerar[11].ToString() + "|";
+                    registros += rowaGenerar[12].ToString() + "|";
+                    registros += rowaGenerar[13].ToString() + "|\n";
+                }
+
+                sw.WriteLine(registros);
+                sw.Close();
+
+                if (!string.IsNullOrEmpty(archivo))
+                {
+                    List<FileInfo> archivosSubir = new List<FileInfo>();
+                    FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + archivo);
+                    archivosSubir.Add(fsubir);
+
+                    //Subo los archivos al FTP
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .txt del reporte " + informePedido.Id + " al FTP", "");
+                    this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
+                    //Actualizo el estado del Informe
+                    actualizarEstadoInforme(informePedido.Id);
+                }
+                else
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error al generar reporte ventas. ID Reporte: " + informePedido.Id, "");
+                }
+            }
+            catch (Exception ex)
+            {
+
             }
         }
         #endregion
@@ -762,7 +844,7 @@ namespace SP_Load_Data
                     //{
                     dt.Rows.Add(row);
 
-                    
+
 
                     //primeraVuelta = 0;
                     //}
