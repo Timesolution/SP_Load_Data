@@ -95,5 +95,15 @@ namespace SP_Load_Data.Modelo
             }
             return false;
         }
+
+        public bool EsReporteCobrosRealizados(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 11)
+            {
+                _appLog.LogInfo("Va a generar el Reporte de Cobros Realizados con ID: " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
     }
 }

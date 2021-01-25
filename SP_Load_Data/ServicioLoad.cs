@@ -63,6 +63,9 @@ namespace SP_Load_Data
             Procesar procesar = new Procesar();
             try
             {
+                ///Para modo Debug, hay que descomentar esa linea
+                InicializarLog();
+
                 Informes_PedidosManager informes_PedidosManager = new Informes_PedidosManager();
                 List<Informes_Pedidos> listaInformesPedidos = new List<Informes_Pedidos>();
                 listaInformesPedidos = contInfEnt.obtenerInformesPedidosPendientes();
@@ -106,6 +109,10 @@ namespace SP_Load_Data
                     if (informes_PedidosManager.EsReporteArticulosFiltrados(informePedido))
                     {
                         procesar.GenerarReporteVentasFiltradas(informePedido);
+                    }
+                    if (informes_PedidosManager.EsReporteCobrosRealizados(informePedido))
+                    {
+                        procesar.GenerarReporteCobrosRealizados(informePedido);
                     }
                 }
             }
