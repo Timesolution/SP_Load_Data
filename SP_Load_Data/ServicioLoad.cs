@@ -105,7 +105,7 @@ namespace SP_Load_Data
                     }
                     if (informes_PedidosManager.EsReporteArticulosFiltrados(informePedido))
                     {
-                        procesar.GenerarReporteArticulosFiltrados(informePedido);
+                        procesar.GenerarReporteVentasFiltradas(informePedido);
                     }
                 }
             }
