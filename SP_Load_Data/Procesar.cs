@@ -490,6 +490,71 @@ namespace SP_Load_Data
                 }
             }
         }
+        public void GenerarReporteEcommerceArticulos(Informes_Pedidos informePedido)
+        {
+            using (var dbGestion = new GestionEntities())
+            {
+                using (var dbContextTransaction = dbGestion.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        controladorFunciones contFunciones = new controladorFunciones();
+
+                        var fecha = DateTime.Today;
+                        var archivo =   "\\Articulos" + ".txt";
+                        StreamWriter sw = new StreamWriter(archivo, false, Encoding.ASCII);
+
+                        var dtArticulosActivos = controladorArticulo.obtenerArticulosActivosTXT(); ; //OBTENGO LAS CUENTAS CORRIENTES
+                        string registro = string.Empty;
+
+                        DataTable dtCCExportacion = new DataTable(); //CREO TABLA PARA LLENAR
+
+                        string registros = "";
+                        foreach (DataRow rowaGenerar in dtArticulosActivos.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
+                        {
+
+                            //Gestion_Api.Entitys.articulo artEnt = this.contArtEnt.obtenerArticuloEntity(Convert.ToInt32(rowaGenerar["id"]));
+                            System.Data.DataRow rowArchivo = dtCCExportacion.NewRow();
+
+
+
+                            registros += rowaGenerar[0].ToString() + "|";
+                            registros += rowaGenerar[1].ToString() + "|";
+                            registros += rowaGenerar[2].ToString() + "|";
+                            registros += rowaGenerar[3].ToString() + "|";
+                            registros += rowaGenerar[4].ToString() + "|";
+                            registros += rowaGenerar[5].ToString() + "|";
+                            registros += rowaGenerar[6].ToString() + "|";
+                            registros += rowaGenerar[7].ToString() + "|";
+                            registros += rowaGenerar[8].ToString() + "|";
+                            registros += rowaGenerar[9].ToString() + "|";
+                            registros += rowaGenerar[10].ToString() + "|";
+                            registros += rowaGenerar[11].ToString() + "|";
+                            registros += rowaGenerar[12].ToString() + "|";
+                            registros += rowaGenerar[13].ToString() + "|\n";
+
+
+                        }
+
+                        if (registros != null)
+                        {
+                            sw.WriteLine(registros);
+                            sw.Close();
+                        }
+                        else
+                        {
+                            Log.EscribirSQL(1, "ERROR", "Error en pasar datos de la tabla al string para generar el Tapice. Devolvio NULL a la variable 'registro' .Ubicacion: controladorReporte.generarArchivoTapice");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.EscribirSQL(1, "ERROR", "CATCH: Error en generar el archivo Tapice .Ubicacion: controladorReporte.generarArchivoTapice. Mensaje: " + ex.Message);
+                      
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region FTP
@@ -703,7 +768,7 @@ namespace SP_Load_Data
                     //{
                     dt.Rows.Add(row);
 
-                    
+
 
                     //primeraVuelta = 0;
                     //}

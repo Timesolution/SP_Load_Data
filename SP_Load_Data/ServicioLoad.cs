@@ -107,6 +107,10 @@ namespace SP_Load_Data
                     {
                         procesar.GenerarReporteArticulosFiltrados(informePedido);
                     }
+                    if (informes_PedidosManager.EsReporteEcommerceTxtArticulo(informePedido))
+                    {
+                        procesar.GenerarReporteEcommerceArticulos(informePedido);
+                    }
                 }
             }
             catch (Exception ex)
