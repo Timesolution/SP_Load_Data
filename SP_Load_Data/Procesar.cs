@@ -442,7 +442,7 @@ namespace SP_Load_Data
             }
         }
 
-        public void GenerarReporteArticulosFiltrados(Informes_Pedidos informePedido)
+        public void GenerarReporteVentasFiltradas(Informes_Pedidos informePedido)
         {
             controladorReportes contReport = new controladorReportes();
 
@@ -464,7 +464,7 @@ namespace SP_Load_Data
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta del reporte es: " + Settings.Default.rutaReporte + "Reporte_VentasFiltradas.rdlc", "");
                     string nombreArchivoGenerado = contReport.GenerarReporteVentasFiltradas(Settings.Default.rutaDescarga + informePedido.Id + '/', Settings.Default.rutaReporte + "Reporte_VentasFiltradas.rdlc", infXML.FechaDesde, infXML.FechaHasta, infXML.Sucursal, infXML.Empresa, infXML.Tipo,
-                                                                                infXML.Cliente,infXML.TipoCliente, infXML.Documento, infXML.Anuladas, infXML.ListaPrecio, infXML.Vendedor, infXML.FormaPago);
+                                                                                infXML.Cliente,infXML.TipoCliente, infXML.Documento, infXML.Anuladas, infXML.ListaPrecio, infXML.Vendedor, infXML.FormaPago, Convert.ToInt32(informePedido.Id));
                     if (!string.IsNullOrEmpty(nombreArchivoGenerado))
                     {
                         List<FileInfo> archivosSubir = new List<FileInfo>();
