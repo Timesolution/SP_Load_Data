@@ -16,11 +16,9 @@ using System.Web;
 
 namespace SP_Load_Data
 {
-    class Procesar { 
+    class Procesar {
 
-
-        public HttpResponse Response { get; }
-    string server = Settings.Default.FTP;
+        string server = Settings.Default.FTP;
         string user = Settings.Default.User;
         string pass = Settings.Default.Pass;
 
@@ -563,24 +561,30 @@ namespace SP_Load_Data
 
 
                 ///Creo el directiorio
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a crear directorio.","");
                 var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
 
                 if (!directory.Exists)
                 {
                     directory.Create();
                 }
-               
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el directorio.", "");
                 controladorFunciones contFunciones = new controladorFunciones();
 
                 var fecha = DateTime.Today;
                 var archivo = directory.FullName+"Articulos" + ".txt";
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el archivo.", "");
+
                 StreamWriter sw = new StreamWriter(archivo, false, Encoding.ASCII);
 
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Obtengo los datos.", "");
                 var dtArticulosActivos = controladorArticulo.obtenerArticulosActivosTXT(); ; //OBTENGO LAS CUENTAS CORRIENTES
                 string registro = string.Empty;
 
                 DataTable dtCCExportacion = new DataTable(); //CREO TABLA PARA LLENAR
 
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Seteo los datos al .txt.", "");
                 string registros = "";
                 foreach (DataRow rowaGenerar in dtArticulosActivos.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
                 {
@@ -604,18 +608,25 @@ namespace SP_Load_Data
                     registros += rowaGenerar[13].ToString() + "|\n";
                 }
 
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Escribo el archivo.", "");
                 sw.WriteLine(registros);
                 sw.Close();
 
                 if (!string.IsNullOrEmpty(archivo))
                 {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a subir el archivo.", "");
+
                     List<FileInfo> archivosSubir = new List<FileInfo>();
-                    FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + archivo);
+                    FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + "Articulos.txt");
                     archivosSubir.Add(fsubir);
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a subir el archivo al FTP.", "");
 
                     //Subo los archivos al FTP
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .txt del reporte " + informePedido.Id + " al FTP", "");
                     this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a actualizar el estado del informe.", "");
 
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
                     //Actualizo el estado del Informe
@@ -628,7 +639,7 @@ namespace SP_Load_Data
             }
             catch (Exception ex)
             {
-
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR. Ocurrio un error en Procesar.cs. Metodo: GenerarReporteEcommerceArticulos.", "");
             }
         }
         #endregion
