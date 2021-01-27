@@ -100,7 +100,7 @@ namespace SP_Load_Data.Modelo
         {
             if (informes_Pedidos.Informe == 9)
             {
-                _appLog.LogInfo("Va a generar el Reporte de Ecommerce de articulos  con ID: " + informes_Pedidos.Id);
+                _appLog.LogInfo("Va a generar el Reporte de Ecommerce de articulos con ID: " + informes_Pedidos.Id);
                 return true;
             }
             return false;

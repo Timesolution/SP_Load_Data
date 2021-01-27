@@ -559,7 +559,6 @@ namespace SP_Load_Data
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .txt con el informe " + informePedido.Id, "");
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
 
-
                 ///Creo el directiorio
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a crear directorio.","");
                 var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
@@ -579,7 +578,7 @@ namespace SP_Load_Data
                 StreamWriter sw = new StreamWriter(archivo, false, Encoding.ASCII);
 
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Obtengo los datos.", "");
-                var dtArticulosActivos = controladorArticulo.obtenerArticulosActivosTXT(); ; //OBTENGO LAS CUENTAS CORRIENTES
+                var dtArticulosActivos = controladorArticulo.obtenerArticulosActivosTXT(); //OBTENGO LAS CUENTAS CORRIENTES
                 string registro = string.Empty;
 
                 DataTable dtCCExportacion = new DataTable(); //CREO TABLA PARA LLENAR
