@@ -27,6 +27,7 @@ namespace SP_Load_Data
         controladorArticulo controladorArticulo = new controladorArticulo();
         controladorSucursal controladorSucursal = new controladorSucursal();
         AccesoDB ac = new AccesoDB();
+        controladorCuentaCorriente controladorCuentaCorriente = new controladorCuentaCorriente();
 
         private ModeloImportacion dbGestionC = new ModeloImportacion();
 
@@ -551,6 +552,114 @@ namespace SP_Load_Data
             }
         }
 
+        public void GenerarReporteEcommerceCuentaCorriente(Informes_Pedidos informePedido)
+        {
+            try
+            {
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .txt con el informe " + informePedido.Id, "");
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+
+                ///Creo el directiorio
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a crear directorio.", "");
+                var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
+
+                if (!directory.Exists)
+                {
+                    directory.Create();
+                }
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el directorio.", "");
+                controladorFunciones contFunciones = new controladorFunciones();
+
+                var fecha = DateTime.Today;
+                var archivo = directory.FullName + "ECOMMERCE-CUENTACORRIENTE_" + informePedido.Id + ".txt";
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el archivo.", "");
+
+                StreamWriter sw = new StreamWriter(archivo, false, Encoding.ASCII);
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Obtengo los datos.", "");
+                DataTable dtCuentaCorrienteFacturas = controladorCuentaCorriente.obtenerMovimientosFacturaTXT(); //OBTENGO LAS CUENTAS CORRIENTES
+                DataTable dtCuentaCorrienteCobros = controladorCuentaCorriente.obtenerMovimientosCobrosTXT(); //OBTENGO LAS CUENTAS CORRIENTES
+                string registros = "";
+
+
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Seteo los datos al .txt.", "");
+                foreach (DataRow row in dtCuentaCorrienteFacturas.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
+                {
+
+
+
+
+                    registros += row[0].ToString() + "|";
+                    registros += row[1].ToString() + "|";
+                    registros += row[2].ToString() + "|";
+                    registros += row[3].ToString() + "|";
+                    registros += row[4].ToString() + "|";
+                    registros += row[5].ToString() + "|";
+                    registros += row[6].ToString() + "|";
+                    registros += row[7].ToString() + "|";
+                    registros += row[8].ToString() + "|";
+                    registros += row[9].ToString() + "|";
+                    registros += row[10].ToString() + "|";
+                    registros += row[11].ToString() + "|\n";
+
+
+                }
+                foreach (DataRow row in dtCuentaCorrienteCobros.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
+                {
+
+
+                    registros += row[0].ToString() + "|";
+                    registros += row[1].ToString() + "|";
+                    registros += row[2].ToString() + "|";
+                    registros += row[3].ToString() + "|";
+                    registros += row[4].ToString() + "|";
+                    registros += row[5].ToString() + "|";
+                    registros += row[6].ToString() + "|";
+                    registros += row[7].ToString() + "|";
+                    registros += row[8].ToString() + "|";
+                    registros += row[9].ToString() + "|";
+                    registros += row[10].ToString() + "|";
+                    registros += row[11].ToString() + "|\n";
+
+
+                }
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Escribo el archivo.", "");
+                sw.WriteLine(registros);
+                sw.Close();
+
+                if (!string.IsNullOrEmpty(archivo))
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a subir el archivo.", "");
+
+                    List<FileInfo> archivosSubir = new List<FileInfo>();
+                    FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + "ECOMMERCE-CUENTACORRIENTE_" + informePedido.Id + ".txt");
+                    archivosSubir.Add(fsubir);
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a subir el archivo al FTP.", "");
+
+                    //Subo los archivos al FTP
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .txt del reporte " + informePedido.Id + " al FTP", "");
+                    this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a actualizar el estado del informe.", "");
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
+                    //Actualizo el estado del Informe
+                    actualizarEstadoInforme(informePedido.Id);
+                }
+                else
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error al generar reporte ventas. ID Reporte: " + informePedido.Id, "");
+                }
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR. Ocurrio un error en Procesar.cs. Metodo: GenerarReporteEcommerceArticulos.", "");
+            }
+        }
         public void GenerarReporteEcommerceArticulos(Informes_Pedidos informePedido)
         {
             try
