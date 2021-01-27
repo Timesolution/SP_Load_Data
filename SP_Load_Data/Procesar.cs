@@ -572,7 +572,7 @@ namespace SP_Load_Data
                 controladorFunciones contFunciones = new controladorFunciones();
 
                 var fecha = DateTime.Today;
-                var archivo = directory.FullName+"Articulos" + ".txt";
+                var archivo = directory.FullName + "ECOMMERCE-ARTICULOS_" + informePedido.Id + ".txt";
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el archivo.", "");
 
                 StreamWriter sw = new StreamWriter(archivo, false, Encoding.ASCII);
@@ -616,7 +616,7 @@ namespace SP_Load_Data
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a subir el archivo.", "");
 
                     List<FileInfo> archivosSubir = new List<FileInfo>();
-                    FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + "Articulos.txt");
+                    FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + "ECOMMERCE-ARTICULOS_" + informePedido.Id + ".txt");
                     archivosSubir.Add(fsubir);
 
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a subir el archivo al FTP.", "");
@@ -686,7 +686,7 @@ namespace SP_Load_Data
                 foreach (var arch in archivosSubir)
                 {
                     //Subo el archivo al FTP
-                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo " + arch.Name, "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo " + arch.Name + ". FullName: " + arch.FullName, "");
                     ftp.upload2(server + "/" + rutaFtp + arch.Name, arch.FullName, arch.Name);
                 }
             }
