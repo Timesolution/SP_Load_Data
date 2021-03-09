@@ -588,7 +588,7 @@ namespace SP_Load_Data
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Seteo los datos al .txt.", "");
                 foreach (DataRow row in dtCuentaCorrienteFacturas.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
                 {
-
+                    System.Data.DataRow rowArchivo = dtCuentaCorrienteFacturas.NewRow();
 
 
 
@@ -604,6 +604,7 @@ namespace SP_Load_Data
                     registros += row[9].ToString() + "|";
                     registros += row[10].ToString() + "|";
                     registros += row[11].ToString() + "|\n";
+
 
 
                 }
@@ -623,6 +624,7 @@ namespace SP_Load_Data
                     registros += row[9].ToString() + "|";
                     registros += row[10].ToString() + "|";
                     registros += row[11].ToString() + "|\n";
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Termino de cargar los cobros", "");
 
 
                 }
@@ -696,7 +698,13 @@ namespace SP_Load_Data
                 string registros = "";
                 foreach (DataRow rowaGenerar in dtArticulosActivos.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
                 {
-
+                    String ruta = server + "/httpdocs/images/Productos/"+ rowaGenerar[14].ToString() + "\\/";
+                    string[] archivosFTP=null;
+                    if (ftp.directoryListSimple(ruta)!=null)
+                    {
+                        archivosFTP = ftp.directoryListSimple(ruta);
+                    }
+                    
                     //Gestion_Api.Entitys.articulo artEnt = this.contArtEnt.obtenerArticuloEntity(Convert.ToInt32(rowaGenerar["id"]));
                     System.Data.DataRow rowArchivo = dtCCExportacion.NewRow();
 
@@ -713,7 +721,9 @@ namespace SP_Load_Data
                     registros += rowaGenerar[10].ToString() + "|";
                     registros += rowaGenerar[11].ToString() + "|";
                     registros += rowaGenerar[12].ToString() + "|";
-                    registros += rowaGenerar[13].ToString() + "|\n";
+                    registros += rowaGenerar[13].ToString() + "|";
+                    registros += archivosFTP[0] + "|\n" ?? " " + "|\n";
+
                 }
 
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Escribo el archivo.", "");
@@ -775,7 +785,7 @@ namespace SP_Load_Data
                             //sino existe el directorio lo creo
                             ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_INFO, ServicioLoad.CLog.TAG_OK, "Creo directorio de descarga " + rutaLocal, "");
                             Directory.CreateDirectory(rutaLocal);
-                        }
+                         }
 
                         //descargo el archivo
                         ftp.download(file, rutaLocal + arch);
