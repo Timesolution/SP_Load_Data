@@ -576,7 +576,7 @@ namespace SP_Load_Data
                 var archivo = directory.FullName + "ECOMMERCE-CUENTACORRIENTE_" + informePedido.Id + ".txt";
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el archivo.", "");
 
-                StreamWriter sw = new StreamWriter(archivo, false, Encoding.ASCII);
+                StreamWriter sw = new StreamWriter(archivo, false, Encoding.UTF8);
 
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Obtengo los datos.", "");
                 DataTable dtCuentaCorrienteFacturas = controladorCuentaCorriente.obtenerMovimientosFacturaTXT(); //OBTENGO LAS CUENTAS CORRIENTES
@@ -686,7 +686,7 @@ namespace SP_Load_Data
                 var archivo = directory.FullName + "ECOMMERCE-ARTICULOS_" + informePedido.Id + ".txt";
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el archivo.", "");
 
-                StreamWriter sw = new StreamWriter(archivo, false, Encoding.ASCII);
+                StreamWriter sw = new StreamWriter(archivo, false, Encoding.UTF8);
 
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Obtengo los datos.", "");
                 var dtArticulosActivos = controladorArticulo.obtenerArticulosActivosTXT(); //OBTENGO LAS CUENTAS CORRIENTES
