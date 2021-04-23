@@ -556,62 +556,51 @@ namespace SP_Load_Data
         {
             try
             {
-
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .txt con el informe " + informePedido.Id, "");
-                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+                
+                //Variables-Controladores
+                controladorFunciones contFunciones = new controladorFunciones();
+                string registros = "";
 
-                ///Creo el directiorio
-                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a crear directorio.", "");
+                //Verificamos si existe el directorio
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Verifico si existe el directorio", "");
                 var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
 
                 if (!directory.Exists)
                 {
                     directory.Create();
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creamos el directorio", "");
                 }
 
-                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el directorio.", "");
-                controladorFunciones contFunciones = new controladorFunciones();
-
-                var fecha = DateTime.Today;
-                var archivo = directory.FullName + "ECOMMERCE-CUENTACORRIENTE_" + informePedido.Id + ".txt";
-                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el archivo.", "");
-
-                StreamWriter sw = new StreamWriter(archivo, false, Encoding.UTF8);
-
+                //Obtenemos los datos con los que vamos a cargar el archivo
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Obtengo los datos.", "");
-                DataTable dtCuentaCorrienteFacturas = controladorCuentaCorriente.obtenerMovimientosFacturaTXT(); //OBTENGO LAS CUENTAS CORRIENTES
-                DataTable dtCuentaCorrienteCobros = controladorCuentaCorriente.obtenerMovimientosCobrosTXT(); //OBTENGO LAS CUENTAS CORRIENTES
-                string registros = "";
 
+                #region Codigo Viejo - Cambio: 22-04-2021. Autor: Luciano Diaz
+                //DataTable dtCuentaCorrienteFacturas = controladorCuentaCorriente.obtenerMovimientosFacturaTXT();
+                //DataTable dtCuentaCorrienteCobros = controladorCuentaCorriente.obtenerMovimientosCobrosTXT();
+                #endregion
 
+                DataTable datos = controladorCuentaCorriente.obtenerMovimientosByCuentaDT();
 
-                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Seteo los datos al .txt.", "");
-                foreach (DataRow row in dtCuentaCorrienteFacturas.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
+                //Recorremos las facturas de las cuentas corrientes
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Cargamos los datos al array", "");
+                foreach (DataRow row in dtCuentaCorrienteFacturas.Rows)
                 {
                     System.Data.DataRow rowArchivo = dtCuentaCorrienteFacturas.NewRow();
 
-
-
-                    registros += row[0].ToString() + "|";
-                    registros += row[1].ToString() + "|";
-                    registros += row[2].ToString() + "|";
-                    registros += row[3].ToString() + "|";
-                    registros += row[4].ToString() + "|";
-                    registros += row[5].ToString() + "|";
-                    registros += row[6].ToString() + "|";
-                    registros += row[7].ToString() + "|";
-                    registros += row[8].ToString() + "|";
-                    registros += row[9].ToString() + "|";
-                    registros += row[10].ToString() + "|";
-                    registros += row[11].ToString() + "|\n";
-
-
+                    registros += row[4].ToString() + "|"; //CUIT
+                    registros += row[6].ToString() + "|"; //NUMERO DOCUMENTO
+                    registros += row[5].ToString() + "|"; //DESCRIPCION DOCUMENTO
+                    registros += row[0].ToString() + "|"; //FECHA EMISION
+                    registros += row[7].ToString() + "|"; //DEBE
+                    registros += row[8].ToString() + "|"; //HABER
+                    registros += row[9].ToString() + "|\n"; //SALDO
 
                 }
-                foreach (DataRow row in dtCuentaCorrienteCobros.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
+
+                //Recorremos los movimientos de las cuentas corrientes
+                foreach (DataRow row in dtCuentaCorrienteCobros.Rows)
                 {
-
-
                     registros += row[0].ToString() + "|";
                     registros += row[1].ToString() + "|";
                     registros += row[2].ToString() + "|";
@@ -624,11 +613,12 @@ namespace SP_Load_Data
                     registros += row[9].ToString() + "|";
                     registros += row[10].ToString() + "|";
                     registros += row[11].ToString() + "|\n";
-                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Termino de cargar los cobros", "");
-
-
                 }
-                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Escribo el archivo.", "");
+
+                //Seteo el nombre del archivo, lo instanciamos y lo escribimos
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Terminamos la carga. Escribimos el archivo.", "");
+                var archivo = directory.FullName + "Saldosclientes_" + informePedido.Id + ".txt";
+                StreamWriter sw = new StreamWriter(archivo, false, Encoding.UTF8);
                 sw.WriteLine(registros);
                 sw.Close();
 
