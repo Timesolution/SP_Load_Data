@@ -25,7 +25,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("158.69.112.103")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ftp://51.222.29.204")]
         public string FTP {
             get {
                 return ((string)(this["FTP"]));
@@ -34,7 +34,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Timesol1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Time_Sol1!")]
         public string Pass {
             get {
                 return ((string)(this["Pass"]));
@@ -55,8 +55,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\black\\Documents\\Trabajo\\Proyectos\\Gestion.ServiciosDeReportes\\SP_Load_Da" +
-            "ta_SVR\\SP_Load_Data\\SP_Load_Data\\Reportes\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Proyectos\\Luciano_Diaz\\Servicio_Reportes")]
         public string rutaReporte {
             get {
                 return ((string)(this["rutaReporte"]));
@@ -68,7 +67,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("testingts")]
+        [global::System.Configuration.DefaultSettingValueAttribute("desarrollo")]
         public string User {
             get {
                 return ((string)(this["User"]));
@@ -77,7 +76,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Proyectos\\Reportes\\Gestion.ServiciosDeReportes\\SP_Load_Data_SVR\\Log\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Proyectos\\Luciano_Diaz\\Servicio_Reportes\\Log\\")]
         public string Path_Log {
             get {
                 return ((string)(this["Path_Log"]));
@@ -86,8 +85,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Proyectos\\Reportes\\Gestion.ServiciosDeReportes\\SP_Load_Data_SVR\\SP_Load_Data\\D" +
-            "escarga Archivos\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Proyectos\\Luciano_Diaz\\Servicio_Reportes\\Descarga Archivos\\")]
         public string rutaDescarga {
             get {
                 return ((string)(this["rutaDescarga"]));

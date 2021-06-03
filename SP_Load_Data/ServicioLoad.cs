@@ -60,10 +60,12 @@ namespace SP_Load_Data
 
         public void Inicio()
         {
-            
             Procesar procesar = new Procesar();
             try
             {
+                ///Para modo Debug, hay que descomentar esa linea
+                InicializarLog();
+
                 Informes_PedidosManager informes_PedidosManager = new Informes_PedidosManager();
                 List<Informes_Pedidos> listaInformesPedidos = new List<Informes_Pedidos>();
                 listaInformesPedidos = contInfEnt.obtenerInformesPedidosPendientes();
@@ -93,21 +95,32 @@ namespace SP_Load_Data
                     }
                     if (informes_PedidosManager.EsInformeDeListaDePreciosAgrupadoPorUbicacion(informePedido))
                     {
-                        procesar.generarInformeDeListaDePrecios(informePedido);//usa el mismo porque es el mismo reporte solo que con formato diferente
+                        procesar.generarInformeDeListaDePrecios(informePedido);///usa el mismo porque es el mismo reporte solo que con formato diferente
                     }
                     if (informes_PedidosManager.EsImportacionDeArticulos(informePedido))
                     {
                         Procesar obj = new Procesar();
 
                         ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a procesar los articulos de la base externa", "");
-                        int exito = procesar.ImportarArticulosBaseExterna(informePedido);//usa el mismo porque es el mismo reporte solo que con formato diferente
+                        int exito = procesar.ImportarArticulosBaseExterna(informePedido);///usa el mismo porque es el mismo reporte solo que con formato diferente
 
                         ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Termino importacion de articulos desde la base externa.", "");
-                        //ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a setear los comentarios en la base externa", "");
-                        //obj.setearMensajesBaseExterna(dtMensajes);
-
-                        //ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a actualizar el estado del informe", "");
-                        //obj.actualizarEstadoInforme(informePedido.Id);
+                    }
+                    if (informes_PedidosManager.EsReporteArticulosFiltrados(informePedido))
+                    {
+                        procesar.GenerarReporteVentasFiltradas(informePedido);
+                    }
+                    if (informes_PedidosManager.EsReporteCobrosRealizados(informePedido))
+                    {
+                        procesar.GenerarReporteCobrosRealizados(informePedido);
+                    }
+                    if (informes_PedidosManager.EsReporteEcommerceTxtArticulo(informePedido))
+                    {
+                        procesar.GenerarReporteEcommerceArticulos(informePedido);
+                    }
+                    if (informes_PedidosManager.EsReporteEcommerceTxtCuentaCorriente(informePedido))
+                    {
+                        procesar.GenerarReporteEcommerceCuentaCorriente(informePedido);
                     }
                 }
             }

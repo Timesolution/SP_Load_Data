@@ -12,11 +12,12 @@ using System.Data;
 using Gestion_Api.Entitys.ModeloImportacion;
 using Gestor_Solution.Controladores;
 using Gestion_Api.AccesoDatos;
+using System.Web;
 
 namespace SP_Load_Data
 {
-    class Procesar
-    {
+    class Procesar {
+
         string server = Settings.Default.FTP;
         string user = Settings.Default.User;
         string pass = Settings.Default.Pass;
@@ -26,6 +27,7 @@ namespace SP_Load_Data
         controladorArticulo controladorArticulo = new controladorArticulo();
         controladorSucursal controladorSucursal = new controladorSucursal();
         AccesoDB ac = new AccesoDB();
+        controladorCuentaCorriente controladorCuentaCorriente = new controladorCuentaCorriente();
 
         private ModeloImportacion dbGestionC = new ModeloImportacion();
 
@@ -441,6 +443,323 @@ namespace SP_Load_Data
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Ocurrió un error actualizando el estado del Informe Pedido con id " + idInformePedido + Ex.Message, "");
             }
         }
+
+        public void GenerarReporteVentasFiltradas(Informes_Pedidos informePedido)
+        {
+            controladorReportes contReport = new controladorReportes();
+
+            //Descargo los archivos del FTP
+            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a descargar archivo XML de configuraciones del informe con id " + informePedido.Id + " desde el FTP ", "");
+            this.descargarArchivosFTP(Settings.Default.rutaFTP + informePedido.Id + "\\", Settings.Default.rutaDescarga + informePedido.Id + "/");
+
+            var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
+            var archivos = directory.GetFiles("*.xml");
+            if (archivos.Length > 0)
+            {
+                //Deserializo el XML con la configuracion del informe
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a deserializar archivo XML de configuraciones con id " + informePedido.Id, "");
+                InformeXML infXML = new InformeXML();
+                infXML = infXML.DeserializarXML(Settings.Default.rutaDescarga + informePedido.Id + '/' + "Informe_" + informePedido.Id + ".xml");
+                if (infXML != null)
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .xls con el informe " + informePedido.Id, "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta del reporte es: " + Settings.Default.rutaReporte + "Reporte_VentasFiltradas.rdlc", "");
+                    string nombreArchivoGenerado = contReport.GenerarReporteVentasFiltradas(Settings.Default.rutaDescarga + informePedido.Id + '/', Settings.Default.rutaReporte + "Reporte_VentasFiltradas.rdlc", infXML.FechaDesde, infXML.FechaHasta, infXML.Sucursal, infXML.Empresa, infXML.Tipo,
+                                                                                infXML.Cliente, infXML.TipoCliente, infXML.Documento, infXML.Anuladas, infXML.ListaPrecio, infXML.Vendedor, infXML.FormaPago, Convert.ToInt32(informePedido.Id));
+                    if (!string.IsNullOrEmpty(nombreArchivoGenerado))
+                    {
+                        List<FileInfo> archivosSubir = new List<FileInfo>();
+                        FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + nombreArchivoGenerado);
+                        archivosSubir.Add(fsubir);
+
+                        //Subo los archivos al FTP
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .xls del reporte " + informePedido.Id + " al FTP", "");
+                        this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
+                        //Actualizo el estado del Informe
+                        actualizarEstadoInforme(informePedido.Id);
+                    }
+                    else
+                    {
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error al generar reporte ventas. ID Reporte: " + informePedido.Id, "");
+                    }
+                }
+                else
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error deserializando informe XML " + informePedido.Id, "");
+                }
+            }
+        }
+
+        public void GenerarReporteCobrosRealizados(Informes_Pedidos informePedido)
+        {
+            controladorReportes contReport = new controladorReportes();
+
+            //Descargo los archivos del FTP
+            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a descargar archivo XML de configuraciones del informe con id " + informePedido.Id + " desde el FTP ", "");
+            this.descargarArchivosFTP(Settings.Default.rutaFTP + informePedido.Id + "\\", Settings.Default.rutaDescarga + informePedido.Id + "/");
+
+            var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
+            var archivos = directory.GetFiles("*.xml");
+            if (archivos.Length > 0)
+            {
+                //Deserializo el XML con la configuracion del informe
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a deserializar archivo XML de configuraciones con id " + informePedido.Id, "");
+                InformeXML infXML = new InformeXML();
+                infXML = infXML.DeserializarXML(Settings.Default.rutaDescarga + informePedido.Id + '/' + "Informe_" + informePedido.Id + ".xml");
+                if (infXML != null)
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .xls con el informe " + informePedido.Id, "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta del reporte es: " + Settings.Default.rutaReporte + "CobrosRealizadosR.rdlc", "");
+
+                    string nombreArchivoGenerado = contReport.GenerarReporteCobrosRealizados(Settings.Default.rutaDescarga + informePedido.Id + '/', 
+                                                                                             Settings.Default.rutaReporte + "CobrosRealizadosR.rdlc", 
+                                                                                             infXML.FechaDesde, 
+                                                                                             infXML.FechaHasta, 
+                                                                                             infXML.Empresa, 
+                                                                                             infXML.Sucursal, 
+                                                                                             infXML.Cliente,
+                                                                                             infXML.PuntoVenta,
+                                                                                             infXML.Tipo,
+                                                                                             infXML.Vendedor,
+                                                                                             Convert.ToInt32(informePedido.Id));
+                    if (!string.IsNullOrEmpty(nombreArchivoGenerado))
+                    {
+                        List<FileInfo> archivosSubir = new List<FileInfo>();
+                        FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + nombreArchivoGenerado);
+                        archivosSubir.Add(fsubir);
+
+                        //Subo los archivos al FTP
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .xls del reporte " + informePedido.Id + " al FTP", "");
+                        this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
+                        //Actualizo el estado del Informe
+                        actualizarEstadoInforme(informePedido.Id);
+                    }
+                    else
+                    {
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error al generar reporte cobros realizados. ID Reporte: " + informePedido.Id, "");
+                    }
+                }
+                else
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error deserializando informe XML " + informePedido.Id, "");
+                }
+            }
+        }
+
+        public void GenerarReporteEcommerceCuentaCorriente(Informes_Pedidos informePedido)
+        {
+            try
+            {
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .txt con el informe " + informePedido.Id, "");
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+
+                ///Creo el directiorio
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a crear directorio.", "");
+                var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
+
+                if (!directory.Exists)
+                {
+                    directory.Create();
+                }
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el directorio.", "");
+                controladorFunciones contFunciones = new controladorFunciones();
+
+                var fecha = DateTime.Today;
+                var archivo = directory.FullName + "ECOMMERCE-CUENTACORRIENTE_" + informePedido.Id + ".txt";
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el archivo.", "");
+
+                StreamWriter sw = new StreamWriter(archivo, false, Encoding.ASCII);
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Obtengo los datos.", "");
+                DataTable dtCuentaCorrienteFacturas = controladorCuentaCorriente.obtenerMovimientosFacturaTXT(); //OBTENGO LAS CUENTAS CORRIENTES
+                DataTable dtCuentaCorrienteCobros = controladorCuentaCorriente.obtenerMovimientosCobrosTXT(); //OBTENGO LAS CUENTAS CORRIENTES
+                string registros = "";
+
+
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Seteo los datos al .txt.", "");
+                foreach (DataRow row in dtCuentaCorrienteFacturas.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
+                {
+                    System.Data.DataRow rowArchivo = dtCuentaCorrienteFacturas.NewRow();
+
+
+
+                    registros += row[0].ToString() + "|";
+                    registros += row[1].ToString() + "|";
+                    registros += row[2].ToString() + "|";
+                    registros += row[3].ToString() + "|";
+                    registros += row[4].ToString() + "|";
+                    registros += row[5].ToString() + "|";
+                    registros += row[6].ToString() + "|";
+                    registros += row[7].ToString() + "|";
+                    registros += row[8].ToString() + "|";
+                    registros += row[9].ToString() + "|";
+                    registros += row[10].ToString() + "|";
+                    registros += row[11].ToString() + "|\n";
+
+
+
+                }
+                foreach (DataRow row in dtCuentaCorrienteCobros.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
+                {
+
+
+                    registros += row[0].ToString() + "|";
+                    registros += row[1].ToString() + "|";
+                    registros += row[2].ToString() + "|";
+                    registros += row[3].ToString() + "|";
+                    registros += row[4].ToString() + "|";
+                    registros += row[5].ToString() + "|";
+                    registros += row[6].ToString() + "|";
+                    registros += row[7].ToString() + "|";
+                    registros += row[8].ToString() + "|";
+                    registros += row[9].ToString() + "|";
+                    registros += row[10].ToString() + "|";
+                    registros += row[11].ToString() + "|\n";
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Termino de cargar los cobros", "");
+
+
+                }
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Escribo el archivo.", "");
+                sw.WriteLine(registros);
+                sw.Close();
+
+                if (!string.IsNullOrEmpty(archivo))
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a subir el archivo.", "");
+
+                    List<FileInfo> archivosSubir = new List<FileInfo>();
+                    FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + "ECOMMERCE-CUENTACORRIENTE_" + informePedido.Id + ".txt");
+                    archivosSubir.Add(fsubir);
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a subir el archivo al FTP.", "");
+
+                    //Subo los archivos al FTP
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .txt del reporte " + informePedido.Id + " al FTP", "");
+                    this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a actualizar el estado del informe.", "");
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
+                    //Actualizo el estado del Informe
+                    actualizarEstadoInforme(informePedido.Id);
+                }
+                else
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error al generar reporte ventas. ID Reporte: " + informePedido.Id, "");
+                }
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR. Ocurrio un error en Procesar.cs. Metodo: GenerarReporteEcommerceArticulos.", "");
+            }
+        }
+        public void GenerarReporteEcommerceArticulos(Informes_Pedidos informePedido)
+        {
+            try
+            {
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .txt con el informe " + informePedido.Id, "");
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+
+                ///Creo el directiorio
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a crear directorio.","");
+                var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
+
+                if (!directory.Exists)
+                {
+                    directory.Create();
+                }
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el directorio.", "");
+                controladorFunciones contFunciones = new controladorFunciones();
+
+                var fecha = DateTime.Today;
+                var archivo = directory.FullName + "ECOMMERCE-ARTICULOS_" + informePedido.Id + ".txt";
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Creo el archivo.", "");
+
+                StreamWriter sw = new StreamWriter(archivo, false, Encoding.ASCII);
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Obtengo los datos.", "");
+                var dtArticulosActivos = controladorArticulo.obtenerArticulosActivosTXT(); //OBTENGO LAS CUENTAS CORRIENTES
+                string registro = string.Empty;
+
+                DataTable dtCCExportacion = new DataTable(); //CREO TABLA PARA LLENAR
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Seteo los datos al .txt.", "");
+                string registros = "";
+                foreach (DataRow rowaGenerar in dtArticulosActivos.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
+                {
+                    String ruta = server + "/httpdocs/images/Productos/"+ rowaGenerar[14].ToString() + "\\/";
+                    string[] archivosFTP=null;
+                    if (ftp.directoryListSimple(ruta)!=null)
+                    {
+                        archivosFTP = ftp.directoryListSimple(ruta);
+                    }
+                    
+                    //Gestion_Api.Entitys.articulo artEnt = this.contArtEnt.obtenerArticuloEntity(Convert.ToInt32(rowaGenerar["id"]));
+                    System.Data.DataRow rowArchivo = dtCCExportacion.NewRow();
+
+                    registros += rowaGenerar[0].ToString() + "|";
+                    registros += rowaGenerar[1].ToString() + "|";
+                    registros += rowaGenerar[2].ToString() + "|";
+                    registros += rowaGenerar[3].ToString() + "|";
+                    registros += rowaGenerar[4].ToString() + "|";
+                    registros += rowaGenerar[5].ToString() + "|";
+                    registros += rowaGenerar[6].ToString() + "|";
+                    registros += rowaGenerar[7].ToString() + "|";
+                    registros += rowaGenerar[8].ToString() + "|";
+                    registros += rowaGenerar[9].ToString() + "|";
+                    registros += rowaGenerar[10].ToString() + "|";
+                    registros += rowaGenerar[11].ToString() + "|";
+                    registros += rowaGenerar[12].ToString() + "|";
+                    registros += rowaGenerar[13].ToString() + "|";
+                    registros += archivosFTP[0] + "|\n" ?? " " + "|\n";
+
+                }
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Escribo el archivo.", "");
+                sw.WriteLine(registros);
+                sw.Close();
+
+                if (!string.IsNullOrEmpty(archivo))
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a subir el archivo.", "");
+
+                    List<FileInfo> archivosSubir = new List<FileInfo>();
+                    FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + "ECOMMERCE-ARTICULOS_" + informePedido.Id + ".txt");
+                    archivosSubir.Add(fsubir);
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a subir el archivo al FTP.", "");
+
+                    //Subo los archivos al FTP
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .txt del reporte " + informePedido.Id + " al FTP", "");
+                    this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a actualizar el estado del informe.", "");
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
+                    //Actualizo el estado del Informe
+                    actualizarEstadoInforme(informePedido.Id);
+                }
+                else
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error al generar reporte ventas. ID Reporte: " + informePedido.Id, "");
+                }
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR. Ocurrio un error en Procesar.cs. Metodo: GenerarReporteEcommerceArticulos.", "");
+            }
+        }
         #endregion
 
         #region FTP
@@ -466,7 +785,7 @@ namespace SP_Load_Data
                             //sino existe el directorio lo creo
                             ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_INFO, ServicioLoad.CLog.TAG_OK, "Creo directorio de descarga " + rutaLocal, "");
                             Directory.CreateDirectory(rutaLocal);
-                        }
+                         }
 
                         //descargo el archivo
                         ftp.download(file, rutaLocal + arch);
@@ -486,7 +805,7 @@ namespace SP_Load_Data
                 foreach (var arch in archivosSubir)
                 {
                     //Subo el archivo al FTP
-                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo " + arch.Name, "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo " + arch.Name + ". FullName: " + arch.FullName, "");
                     ftp.upload2(server + "/" + rutaFtp + arch.Name, arch.FullName, arch.Name);
                 }
             }
@@ -653,6 +972,8 @@ namespace SP_Load_Data
                     //if (primeraVuelta == 1)
                     //{
                     dt.Rows.Add(row);
+
+
 
                     //primeraVuelta = 0;
                     //}
@@ -950,7 +1271,7 @@ namespace SP_Load_Data
             }
             catch (Exception ex)
             {
-                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: no se pudo setear los mensajes en la columna ERROR de la base externa. Ubicacion: Procesar.setearMensajesBaseExterna. Excepcion: " + ex.Message,"");
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: no se pudo setear los mensajes en la columna ERROR de la base externa. Ubicacion: Procesar.setearMensajesBaseExterna. Excepcion: " + ex.Message, "");
             }
         }
 
@@ -1092,153 +1413,143 @@ namespace SP_Load_Data
         {
             using (var dbGestion = new ModeloImportacion())
             {
-                using (var dbContextTransaction = dbGestion.Database.BeginTransaction())
+
+                System.Data.SqlClient.SqlConnection conn1 = new System.Data.SqlClient.SqlConnection(ac.strcondatos);
+                System.Data.SqlClient.SqlBulkCopy bc = new System.Data.SqlClient.SqlBulkCopy(conn1);
+                DataTable dtArticulosMensajes = new DataTable();
+
+                try
                 {
-                    System.Data.SqlClient.SqlConnection conn1 = new System.Data.SqlClient.SqlConnection(ac.strcondatos);
-                    System.Data.SqlClient.SqlBulkCopy bc = new System.Data.SqlClient.SqlBulkCopy(conn1);
-                    DataTable dtArticulosMensajes = new DataTable();
+                    DataTable articulosImportar = GetArticulosImportaciones();
+                    int contadorprueba = 0;
+                    int total = articulosImportar.Rows.Count;
+                    int contGood = 0;
+                    int contBad = 0;
+                    //string mensajeResultado = "";
+                    List<int> idsImportadosdeBaseExterna = new List<int>();
+                    List<int> NoAgregados = new List<int>();
+                    List<int> ListaIdGenerados = new List<int>();
+                    List<Articulos_Marca> ListaArticulosMarca = new List<Articulos_Marca>();
+                    List<Articulos_Arancel_SIM> ListaArancelSim = new List<Articulos_Arancel_SIM>();
+                    List<Articulos_StockMinimo> ListaStockMinimo = new List<Articulos_StockMinimo>();
+                    List<string> CodigosArticulos = new List<string>();
 
-                    try
+                    DataTable dtArticulos = new DataTable();
+                    if (articulosImportar.Rows.Count > 0)
                     {
-                        DataTable articulosImportar = GetArticulosImportaciones();
-                        int contadorprueba = 0;
-                        int total = articulosImportar.Rows.Count;
-                        int contGood = 0;
-                        int contBad = 0;
-                        //string mensajeResultado = "";
-                        List<int> idsImportadosdeBaseExterna = new List<int>();
-                        List<int> NoAgregados = new List<int>();
-                        List<int> ListaIdGenerados = new List<int>();
-                        List<Articulos_Marca> ListaArticulosMarca = new List<Articulos_Marca>();
-                        List<Articulos_Arancel_SIM> ListaArancelSim = new List<Articulos_Arancel_SIM>();
-                        List<Articulos_StockMinimo> ListaStockMinimo = new List<Articulos_StockMinimo>();
-                        List<string> CodigosArticulos = new List<string>();
-
-                        DataTable dtArticulos = new DataTable();
-                        if (articulosImportar.Rows.Count > 0)
+                        for (int j = 0; j < 34; j++)
                         {
-                            for (int j = 0; j < 34; j++)
-                            {
-                                dtArticulos.Columns.Add();
-                            }
-                            for (int j = 0; j < 2; j++)
-                            {
-                                dtArticulosMensajes.Columns.Add();
-                            }
+                            dtArticulos.Columns.Add();
+                        }
+                        for (int j = 0; j < 2; j++)
+                        {
+                            dtArticulosMensajes.Columns.Add();
+                        }
 
-                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Voy a recorrer el 'forEach' para armar el DataTable");
-                            foreach (DataRow rowImportar in articulosImportar.Rows)
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Voy a recorrer el 'forEach' para armar el DataTable");
+                        foreach (DataRow rowImportar in articulosImportar.Rows)
+                        {
+                            Articulos_StockMinimo articulos_StockMinimo = new Articulos_StockMinimo();
+                            Articulos_Arancel_SIM articulos_Arancel_SIM = new Articulos_Arancel_SIM();
+                            Articulos_Marca articulos_Marca = new Articulos_Marca();
+                            Articulo nuevoArticulo = new Articulo();
+                            DataRow row = dtArticulos.NewRow();
+
+                            //if (contadorprueba < 2)
+                            //{
+                            object[] temp = new object[34];
+
+                            temp[0] = rowImportar[0];
+                            if (controladorArticulo.verificarCodArticulo(rowImportar[1].ToString()) == false)
                             {
-                                Articulos_StockMinimo articulos_StockMinimo = new Articulos_StockMinimo();
-                                Articulos_Arancel_SIM articulos_Arancel_SIM = new Articulos_Arancel_SIM();
-                                Articulos_Marca articulos_Marca = new Articulos_Marca();
-                                Articulo nuevoArticulo = new Articulo();
-                                DataRow row = dtArticulos.NewRow();
+                                if (String.IsNullOrEmpty(rowImportar[10].ToString()))
+                                    rowImportar[10] = "0";
 
-                                //if (contadorprueba < 2)
-                                //{
-                                object[] temp = new object[34];
-
-                                temp[0] = rowImportar[0];
-                                if (controladorArticulo.verificarCodArticulo(rowImportar[1].ToString()) == false)
+                                if (!controladorArticulo.VerificarCodigoBarrasArticulo(rowImportar[10].ToString(), 1, rowImportar[1].ToString()))
                                 {
-                                    if (String.IsNullOrEmpty(rowImportar[10].ToString()))
-                                        rowImportar[10] = "0";
+                                    temp[1] = rowImportar[1].ToString(); //codigo
+                                    temp[2] = rowImportar[2].ToString(); //descricpion
 
-                                    if (!controladorArticulo.VerificarCodigoBarrasArticulo(rowImportar[10].ToString(), 1, rowImportar[1].ToString()))
+                                    temp[3] = obtenerIdProveedor(rowImportar[3].ToString()); //proveedor
+
+                                    //Verifcar GRUPO
+                                    var VerificarGrupoArticulo = ControladorArticulosEntity.obtenerGrupoArticuloEntByID(Convert.ToInt32(rowImportar[4]));
+                                    if (VerificarGrupoArticulo != null && VerificarGrupoArticulo.id > 0)
                                     {
-                                        temp[1] = rowImportar[1].ToString(); //codigo
-                                        temp[2] = rowImportar[2].ToString(); //descricpion
-
-                                        temp[3] = obtenerIdProveedor(rowImportar[3].ToString()); //proveedor
-
-                                        //Verifcar GRUPO
-                                        var VerificarGrupoArticulo = ControladorArticulosEntity.obtenerGrupoArticuloEntByID(Convert.ToInt32(rowImportar[4]));
-                                        if (VerificarGrupoArticulo != null && VerificarGrupoArticulo.id > 0)
+                                        //Verifcar SUBGRUPO
+                                        temp[4] = VerificarGrupoArticulo.id; //grupo
+                                        var VerificarSubGrupo = controladorArticulo.obtenerSubGrupoID(Convert.ToInt32(rowImportar[5]));
+                                        if (VerificarSubGrupo != null && VerificarSubGrupo.id > 0)
                                         {
-                                            //Verifcar SUBGRUPO
-                                            temp[4] = VerificarGrupoArticulo.id; //grupo
-                                            var VerificarSubGrupo = controladorArticulo.obtenerSubGrupoID(Convert.ToInt32(rowImportar[5]));
-                                            if (VerificarSubGrupo != null && VerificarSubGrupo.id > 0)
+                                            temp[5] = VerificarSubGrupo.id;
+
+                                            if (ControladorArticulosEntity.VerificarMarcarById(Convert.ToInt32(rowImportar[16])))
                                             {
-                                                temp[5] = VerificarSubGrupo.id;
-
-                                                if (ControladorArticulosEntity.VerificarMarcarById(Convert.ToInt32(rowImportar[16])))
-                                                {
-                                                    temp[6] = Convert.ToDecimal(rowImportar[6]); //costo
-                                                    temp[7] = Convert.ToDecimal(rowImportar[7]); //margen
-                                                    temp[8] = 0.00; //impInternos
-                                                    temp[9] = 0.00; //ingresosBrutos
-                                                    temp[10] = Convert.ToDecimal(rowImportar[8]); //precio venta
-                                                    temp[11] = Convert.ToInt32(rowImportar[20]); //moneda venta
-                                                    temp[12] = Convert.ToDecimal(rowImportar[17]); //stock minimo
-                                                    temp[13] = 1; //aparece lista
-                                                    temp[14] = ""; //ubicacion
-                                                    temp[15] = DateTime.Now; //fecha alta
-                                                    temp[16] = DateTime.Now; //ultima actualizacion
-                                                    temp[17] = DateTime.Now; //modificado
-                                                    if (Convert.ToDecimal(rowImportar[18]) == 0)//procedencia
-                                                        temp[18] = 1;
-                                                    else
-                                                        temp[18] = Convert.ToDecimal(rowImportar[18]);
-                                                    temp[19] = Convert.ToDecimal(rowImportar[9]); //porcentaje iva
-                                                    temp[20] = rowImportar[10].ToString(); //codigo barra
-                                                    temp[21] = 1; //estado
-                                                    temp[22] = 0.0M; // incidencia
-                                                    temp[23] = Convert.ToDecimal(rowImportar[11]); //costo imponible
-                                                    temp[24] = Convert.ToDecimal(rowImportar[12]); //costo real
-                                                    temp[25] = Convert.ToDecimal(rowImportar[13]); //precio sin iva
-                                                    ListaCategoria listaCategoria = ObtenerSubLista(Convert.ToInt32(rowImportar[14]));
-                                                    temp[26] = listaCategoria.id; // sublista o lista categoria
-                                                    temp[27] = 0; //store
-                                                    temp[28] = rowImportar[15].ToString(); //observacion
-                                                    temp[29] = rowImportar[16];//marca
-                                                    temp[30] = rowImportar[19]; //categoria , parece que no se usa
-                                                    temp[31] = Convert.ToInt32(rowImportar[21]); //distribucion
-                                                    temp[32] = Convert.ToDecimal(rowImportar[23]); //arancel
-                                                    temp[33] = rowImportar[24].ToString(); //sim
-                                                                                           //temp[32] = Convert.ToDecimal(rowImportar[22]); //error
-                                                    row.ItemArray = temp;
-                                                    CodigosArticulos.Add(row[1].ToString());
-
-                                                    articulos_Marca.idArticulo = Convert.ToInt32(temp[0]);
-                                                    articulos_Marca.CodigoCot = temp[1].ToString(); //voy a usar este campo para guardar la string codigo despues lo blanqueo
-                                                    articulos_Marca.idMarca = (Convert.ToInt32(temp[29]));
-                                                    articulos_Marca.TipoDistribucion = (Convert.ToInt32(temp[31]));
-                                                    ListaArticulosMarca.Add(articulos_Marca);
-
-                                                    articulos_Arancel_SIM.idArticulo = Convert.ToInt32(temp[0]);
-                                                    articulos_Arancel_SIM.Arancel = Convert.ToDecimal(temp[32]);
-                                                    articulos_Arancel_SIM.SIM = temp[33].ToString();
-                                                    ListaArancelSim.Add(articulos_Arancel_SIM);
-
-                                                    articulos_StockMinimo.id = Convert.ToInt32(temp[0]);
-                                                    articulos_StockMinimo.stockMinimo = Convert.ToDecimal(temp[12]);
-                                                    ListaStockMinimo.Add(articulos_StockMinimo);
-
-                                                    dtArticulos.Rows.Add(row);
-                                                    contadorprueba++;
-                                                    contGood++;
-                                                    idsImportadosdeBaseExterna.Add(Convert.ToInt32(temp[0]));
-                                                    DataRow rowMensaje = dtArticulosMensajes.NewRow();
-                                                    rowMensaje[0] = temp[0];
-                                                    rowMensaje[1] = "OK.";
-                                                    dtArticulosMensajes.Rows.Add(rowMensaje);
-                                                }
+                                                temp[6] = Convert.ToDecimal(rowImportar[6]); //costo
+                                                temp[7] = Convert.ToDecimal(rowImportar[7]); //margen
+                                                temp[8] = 0.00; //impInternos
+                                                temp[9] = 0.00; //ingresosBrutos
+                                                temp[10] = Convert.ToDecimal(rowImportar[8]); //precio venta
+                                                temp[11] = Convert.ToInt32(rowImportar[20]); //moneda venta
+                                                temp[12] = Convert.ToDecimal(rowImportar[17]); //stock minimo
+                                                temp[13] = 1; //aparece lista
+                                                temp[14] = ""; //ubicacion
+                                                temp[15] = DateTime.Now; //fecha alta
+                                                temp[16] = DateTime.Now; //ultima actualizacion
+                                                temp[17] = DateTime.Now; //modificado
+                                                if (Convert.ToDecimal(rowImportar[18]) == 0)//procedencia
+                                                    temp[18] = 1;
                                                 else
-                                                {
-                                                    DataRow rowMensaje = dtArticulosMensajes.NewRow();
-                                                    rowMensaje[0] = temp[0];
-                                                    rowMensaje[1] = "La marca no existe en la base de destino.";
-                                                    dtArticulosMensajes.Rows.Add(rowMensaje);
-                                                    contBad++;
-                                                }
+                                                    temp[18] = Convert.ToDecimal(rowImportar[18]);
+                                                temp[19] = Convert.ToDecimal(rowImportar[9]); //porcentaje iva
+                                                temp[20] = rowImportar[10].ToString(); //codigo barra
+                                                temp[21] = 1; //estado
+                                                temp[22] = 0.0M; // incidencia
+                                                temp[23] = Convert.ToDecimal(rowImportar[11]); //costo imponible
+                                                temp[24] = Convert.ToDecimal(rowImportar[12]); //costo real
+                                                temp[25] = Convert.ToDecimal(rowImportar[13]); //precio sin iva
+                                                ListaCategoria listaCategoria = ObtenerSubLista(Convert.ToInt32(rowImportar[14]));
+                                                temp[26] = listaCategoria.id; // sublista o lista categoria
+                                                temp[27] = 0; //store
+                                                temp[28] = rowImportar[15].ToString(); //observacion
+                                                temp[29] = rowImportar[16];//marca
+                                                temp[30] = rowImportar[19]; //categoria , parece que no se usa
+                                                temp[31] = Convert.ToInt32(rowImportar[21]); //distribucion
+                                                temp[32] = Convert.ToDecimal(rowImportar[23]); //arancel
+                                                temp[33] = rowImportar[24].ToString(); //sim
+                                                                                       //temp[32] = Convert.ToDecimal(rowImportar[22]); //error
+                                                row.ItemArray = temp;
+                                                CodigosArticulos.Add(row[1].ToString());
+
+                                                articulos_Marca.idArticulo = Convert.ToInt32(temp[0]);
+                                                articulos_Marca.CodigoCot = temp[1].ToString(); //voy a usar este campo para guardar la string codigo despues lo blanqueo
+                                                articulos_Marca.idMarca = (Convert.ToInt32(temp[29]));
+                                                articulos_Marca.TipoDistribucion = (Convert.ToInt32(temp[31]));
+                                                ListaArticulosMarca.Add(articulos_Marca);
+
+                                                articulos_Arancel_SIM.idArticulo = Convert.ToInt32(temp[0]);
+                                                articulos_Arancel_SIM.Arancel = Convert.ToDecimal(temp[32]);
+                                                articulos_Arancel_SIM.SIM = temp[33].ToString();
+                                                ListaArancelSim.Add(articulos_Arancel_SIM);
+
+                                                articulos_StockMinimo.id = Convert.ToInt32(temp[0]);
+                                                articulos_StockMinimo.stockMinimo = Convert.ToDecimal(temp[12]);
+                                                ListaStockMinimo.Add(articulos_StockMinimo);
+
+                                                dtArticulos.Rows.Add(row);
+                                                contadorprueba++;
+                                                contGood++;
+                                                idsImportadosdeBaseExterna.Add(Convert.ToInt32(temp[0]));
+                                                DataRow rowMensaje = dtArticulosMensajes.NewRow();
+                                                rowMensaje[0] = temp[0];
+                                                rowMensaje[1] = "OK.";
+                                                dtArticulosMensajes.Rows.Add(rowMensaje);
                                             }
                                             else
                                             {
                                                 DataRow rowMensaje = dtArticulosMensajes.NewRow();
-                                                rowMensaje[0] = temp[0].ToString();
-                                                rowMensaje[1] = "El subgrupo no existe en la base de destino.";
+                                                rowMensaje[0] = temp[0];
+                                                rowMensaje[1] = "La marca no existe en la base de destino.";
                                                 dtArticulosMensajes.Rows.Add(rowMensaje);
                                                 contBad++;
                                             }
@@ -1246,8 +1557,8 @@ namespace SP_Load_Data
                                         else
                                         {
                                             DataRow rowMensaje = dtArticulosMensajes.NewRow();
-                                            rowMensaje[0] = temp[0];
-                                            rowMensaje[1] = "El grupo no existe en la base de destino.";
+                                            rowMensaje[0] = temp[0].ToString();
+                                            rowMensaje[1] = "El subgrupo no existe en la base de destino.";
                                             dtArticulosMensajes.Rows.Add(rowMensaje);
                                             contBad++;
                                         }
@@ -1256,7 +1567,7 @@ namespace SP_Load_Data
                                     {
                                         DataRow rowMensaje = dtArticulosMensajes.NewRow();
                                         rowMensaje[0] = temp[0];
-                                        rowMensaje[1] = "Codigo de barra ya existe en la base destino.";
+                                        rowMensaje[1] = "El grupo no existe en la base de destino.";
                                         dtArticulosMensajes.Rows.Add(rowMensaje);
                                         contBad++;
                                     }
@@ -1265,102 +1576,125 @@ namespace SP_Load_Data
                                 {
                                     DataRow rowMensaje = dtArticulosMensajes.NewRow();
                                     rowMensaje[0] = temp[0];
-                                    rowMensaje[1] = "Codigo de articulo ya existe en la base destino.";
+                                    rowMensaje[1] = "Codigo de barra ya existe en la base destino.";
                                     dtArticulosMensajes.Rows.Add(rowMensaje);
                                     contBad++;
                                 }
                             }
-                        }
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Termino el 'forEach' de armar el DataTable, va a insertar en la tabla articulos.");
-                        if (contGood > 0)
-                        {
-                            conn1.Open();
-
-                            bc.DestinationTableName = "dbo.Articulos";
-
-                            bc.ColumnMappings.Add("Column2", "codigo");
-                            bc.ColumnMappings.Add("Column3", "descripcion");
-                            bc.ColumnMappings.Add("Column4", "proveedor");
-                            bc.ColumnMappings.Add("Column5", "grupo");
-                            bc.ColumnMappings.Add("Column6", "subGrupo");
-                            bc.ColumnMappings.Add("Column7", "costo");
-                            bc.ColumnMappings.Add("Column8", "margen");
-                            bc.ColumnMappings.Add("Column9", "impInternos");
-                            bc.ColumnMappings.Add("Column10", "ingresosBrutos");
-                            bc.ColumnMappings.Add("Column11", "precioVenta");
-                            bc.ColumnMappings.Add("Column12", "monedaVenta");
-                            bc.ColumnMappings.Add("Column13", "stockMinimo");
-                            bc.ColumnMappings.Add("Column14", "apareceLista");
-                            bc.ColumnMappings.Add("Column15", "ubicacion");
-                            bc.ColumnMappings.Add("Column16", "fechaAlta");
-                            bc.ColumnMappings.Add("Column17", "ultimaActualizacion");
-                            bc.ColumnMappings.Add("Column18", "modificado");
-                            bc.ColumnMappings.Add("Column19", "procedencia");
-                            bc.ColumnMappings.Add("Column20", "porcentajeIva");
-                            bc.ColumnMappings.Add("Column21", "codigoBarra");
-                            bc.ColumnMappings.Add("Column22", "estado");
-                            bc.ColumnMappings.Add("Column23", "incidencia");
-                            bc.ColumnMappings.Add("Column24", "costoImponible");
-                            bc.ColumnMappings.Add("Column25", "costoReal");
-                            bc.ColumnMappings.Add("Column26", "precioSinIva");
-                            bc.ColumnMappings.Add("Column27", "SubLista");
-                            bc.ColumnMappings.Add("Column28", "Store");
-                            bc.ColumnMappings.Add("Column29", "Observacion");
-
-                            bc.WriteToServer(dtArticulos);// GUARDO EN LA BASE
-
-                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Se insertaron " + dtArticulos.Rows.Count + " registros en la tabla Articulos. Voy a insertar en las demas tablas.");
-
-                            int cargoIdsInsertados = cargarIdsGenerados(ListaArticulosMarca, ListaArancelSim); // el ListaArancelSim.id contiene el id del articulo de la base de externa, me sirve setear mensajes en la base externa
-                            if (cargoIdsInsertados > 0)
-                            {
-                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto las Marcas.");
-                                int marcasImportar = AgregarMarcas(ListaArticulosMarca, dtArticulosMensajes);
-
-                                //AGREGRO EL ARANCEL IMPORTACION Y SIM
-                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto el ARANCEL IMPORTACION y SIM.");
-                                int agrego = AgregarArancelSim(ListaArancelSim, dtArticulosMensajes);
-
-                                //AGREGO EL STOCK
-                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto el Stock.");
-                                int agregoStock = AgregarStock(ListaStockMinimo, dtArticulosMensajes);
-
-                                //AGREGO ALERTA
-                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto las Alertas.");
-                                int agregoAlerta = AgregarAlerta(ListaArancelSim, dtArticulosMensajes);
-
-                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Comiteo la transacion.");
-                                //dbContextTransaction.Commit();
-                            }
                             else
                             {
-                                //dbContextTransaction.Rollback();
-                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "No se pudo cargar los ID de los articulos insertados");
+                                DataRow rowMensaje = dtArticulosMensajes.NewRow();
+                                rowMensaje[0] = temp[0];
+                                rowMensaje[1] = "Codigo de articulo ya existe en la base destino.";
+                                dtArticulosMensajes.Rows.Add(rowMensaje);
+                                contBad++;
                             }
-
-                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Se importaron " + contGood.ToString() + " articulos de " + total, "");
-                            //mensajeResultado = "Se importaron " + contGood.ToString() + " articulos de " + total;
-                            //EliminarArticulosBaseExterna(NoAgregados);
                         }
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a setear los comentarios en la base externa", "");
+                    }
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Termino el 'forEach' de armar el DataTable, va a insertar en la tabla articulos.");
+                    if (contGood > 0)
+                    {
+                        conn1.Open();
 
-                        setearMensajesBaseExterna(dtArticulosMensajes);
-                        return 1;
+                        bc.DestinationTableName = "dbo.Articulos";
+
+                        bc.ColumnMappings.Add("Column2", "codigo");
+                        bc.ColumnMappings.Add("Column3", "descripcion");
+                        bc.ColumnMappings.Add("Column4", "proveedor");
+                        bc.ColumnMappings.Add("Column5", "grupo");
+                        bc.ColumnMappings.Add("Column6", "subGrupo");
+                        bc.ColumnMappings.Add("Column7", "costo");
+                        bc.ColumnMappings.Add("Column8", "margen");
+                        bc.ColumnMappings.Add("Column9", "impInternos");
+                        bc.ColumnMappings.Add("Column10", "ingresosBrutos");
+                        bc.ColumnMappings.Add("Column11", "precioVenta");
+                        bc.ColumnMappings.Add("Column12", "monedaVenta");
+                        bc.ColumnMappings.Add("Column13", "stockMinimo");
+                        bc.ColumnMappings.Add("Column14", "apareceLista");
+                        bc.ColumnMappings.Add("Column15", "ubicacion");
+                        bc.ColumnMappings.Add("Column16", "fechaAlta");
+                        bc.ColumnMappings.Add("Column17", "ultimaActualizacion");
+                        bc.ColumnMappings.Add("Column18", "modificado");
+                        bc.ColumnMappings.Add("Column19", "procedencia");
+                        bc.ColumnMappings.Add("Column20", "porcentajeIva");
+                        bc.ColumnMappings.Add("Column21", "codigoBarra");
+                        bc.ColumnMappings.Add("Column22", "estado");
+                        bc.ColumnMappings.Add("Column23", "incidencia");
+                        bc.ColumnMappings.Add("Column24", "costoImponible");
+                        bc.ColumnMappings.Add("Column25", "costoReal");
+                        bc.ColumnMappings.Add("Column26", "precioSinIva");
+                        bc.ColumnMappings.Add("Column27", "SubLista");
+                        bc.ColumnMappings.Add("Column28", "Store");
+                        bc.ColumnMappings.Add("Column29", "Observacion");
+
+                        bc.WriteToServer(dtArticulos);// GUARDO EN LA BASE
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Se insertaron " + dtArticulos.Rows.Count + " registros en la tabla Articulos. Voy a insertar en las demas tablas.");
+
+                        int cargoIdsInsertados = cargarIdsGenerados(ListaArticulosMarca, ListaArancelSim); // el ListaArancelSim.id contiene el id del articulo de la base de externa, me sirve setear mensajes en la base externa
+                        if (cargoIdsInsertados > 0)
+                        {
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto las Marcas.");
+                            int marcasImportar = AgregarMarcas(ListaArticulosMarca, dtArticulosMensajes);
+
+                            //AGREGRO EL ARANCEL IMPORTACION Y SIM
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto el ARANCEL IMPORTACION y SIM.");
+                            int agrego = AgregarArancelSim(ListaArancelSim, dtArticulosMensajes);
+
+                            //AGREGO EL STOCK
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto el Stock.");
+                            int agregoStock = AgregarStock(ListaStockMinimo, dtArticulosMensajes);
+
+                            //AGREGO ALERTA
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Inserto las Alertas.");
+                            int agregoAlerta = AgregarAlerta(ListaArancelSim, dtArticulosMensajes);
+
+                            //ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO", "Comiteo la transacion.");
+                            //dbContextTransaction.Commit();
+                        }
+                        else
+                        {
+                            //dbContextTransaction.Rollback();
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR", "No se pudo cargar los ID de los articulos insertados");
+                        }
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Se importaron " + contGood.ToString() + " articulos de " + total, "");
+                        //mensajeResultado = "Se importaron " + contGood.ToString() + " articulos de " + total;
+                        //EliminarArticulosBaseExterna(NoAgregados);
                     }
-                    catch (Exception ex)
-                    {
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a setear los comentarios en la base externa", "");
-                        setearMensajesBaseExterna(dtArticulosMensajes);
-                        //dbContextTransaction.Rollback();
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "CATCH: Error en Importacion de Articulos. Metodo: ImportarArticulosGestion. Excecpion: " + ex.Message, "");
-                        return -1;
-                    }
-                    finally
-                    {
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a actualizar el estado del informe", "");
-                        actualizarEstadoInforme(ip.Id);
-                        conn1.Close();
-                    }
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a setear los comentarios en la base externa", "");
+                    setearMensajesBaseExterna(dtArticulosMensajes);
+
+                    articulosImportar.Clear();
+                    contadorprueba = 0;
+                    total = 0;
+                    contGood = 0;
+                    contBad = 0;
+                    idsImportadosdeBaseExterna.Clear();
+                    NoAgregados.Clear();
+                    ListaIdGenerados.Clear();
+                    ListaArticulosMarca.Clear();
+                    ListaArancelSim.Clear();
+                    ListaStockMinimo.Clear();
+                    CodigosArticulos.Clear();
+                    dtArticulosMensajes.Clear();
+
+                    return 1;
+                }
+                catch (Exception ex)
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a setear los comentarios en la base externa", "");
+                    setearMensajesBaseExterna(dtArticulosMensajes);
+                    //dbContextTransaction.Rollback();
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "CATCH: Error en Importacion de Articulos. Metodo: ImportarArticulosGestion. Excecpion: " + ex.Message, "");
+                    return -1;
+                }
+                finally
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "INFO: Va a actualizar el estado del informe", "");
+                    actualizarEstadoInforme(ip.Id);
+                    conn1.Close();
                 }
             }
         }
