@@ -31,7 +31,7 @@
             // 
             // Service1
             // 
-            this.ServiceName = "TS_GeneradorInformes_IdGroup";
+            this.ServiceName = "TS_GeneradorInformes_DeportShow";
 
         }
 

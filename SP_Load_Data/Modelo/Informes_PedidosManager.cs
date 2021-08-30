@@ -125,6 +125,25 @@ namespace SP_Load_Data.Modelo
             }
             return false;
         }
+        
+        public bool EsReporteArticulosMagento(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 12)
+            {
+                _appLog.LogInfo("Va a generar el Reporte de Articulos Magento con ID: " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
+        public bool EsReporteCobrosRealizadosVendedores(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 13)
+            {
+                _appLog.LogInfo("Va a generar el Reporte de Cobros Realizados Vendedores con ID: " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
     }
 
 }

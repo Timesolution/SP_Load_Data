@@ -13,11 +13,14 @@ using Gestion_Api.Entitys.ModeloImportacion;
 using Gestor_Solution.Controladores;
 using Gestion_Api.AccesoDatos;
 using System.Web;
+using Microsoft.Reporting.WebForms;
+using System.Globalization;
 
 namespace SP_Load_Data
 {
     class Procesar {
 
+        ReportViewer ReportViewer1 = new ReportViewer();
         string server = Settings.Default.FTP;
         string user = Settings.Default.User;
         string pass = Settings.Default.Pass;
@@ -254,6 +257,7 @@ namespace SP_Load_Data
                 this.descargarArchivosFTP(Settings.Default.rutaFTP + ip.Id + "\\", Settings.Default.rutaDescarga + ip.Id + "/");
 
                 //Obtengo el XML con las configuraciones del informe
+
                 var directory = new DirectoryInfo(Settings.Default.rutaDescarga + ip.Id + "/");
                 var archivos = directory.GetFiles("*.xml");
                 if (archivos.Length > 0)
@@ -551,8 +555,58 @@ namespace SP_Load_Data
                 }
             }
         }
+        public void GenerarReporteArticulosMagento(Informes_Pedidos informePedido)
+        {
 
-        public void GenerarReporteEcommerceCuentaCorriente(Informes_Pedidos informePedido)
+            controladorReportes contReport = new controladorReportes();
+
+            //Descargo los archivos del FTP
+            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a descargar archivo XML de configuraciones del informe con id " + informePedido.Id + " desde el FTP ", "");
+            this.descargarArchivosFTP(Settings.Default.rutaFTP + informePedido.Id + "\\", Settings.Default.rutaDescarga + informePedido.Id + "/");
+
+            var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
+            var archivos = directory.GetFiles("*.xml");
+            if (archivos.Length > 0)
+            {
+                //Deserializo el XML con la configuracion del informe
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a deserializar archivo XML de configuraciones con id " + informePedido.Id, "");
+                InformeXML infXML = new InformeXML();
+                infXML = infXML.DeserializarXML(Settings.Default.rutaDescarga + informePedido.Id + '/' + "Informe_" + informePedido.Id + ".xml");
+                if (infXML != null)
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .xls con el informe " + informePedido.Id, "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+
+                    string nombreArchivoGenerado = contReport.generarArchivoArticulosMagento(Settings.Default.rutaDescarga + informePedido.Id + '\\',
+                                            informePedido.Id.ToString(),infXML.FechaDesde,infXML.FechaHasta,infXML.Marca);
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "la ruta que devolvio es" + nombreArchivoGenerado, "");
+
+                    if (!string.IsNullOrEmpty(nombreArchivoGenerado))
+                    {
+                        List<FileInfo> archivosSubir = new List<FileInfo>();
+                        FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + "Articulos-Magento_" + informePedido.Id + ".csv");
+                        archivosSubir.Add(fsubir);
+
+                        //Subo los archivos al FTP
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .xls del reporte " + informePedido.Id + " al FTP", "");
+                        this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
+                        //Actualizo el estado del Informe
+                        actualizarEstadoInforme(informePedido.Id);
+                    }
+                    else
+                    {
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error al generar reporte cobros realizados. ID Reporte: " + informePedido.Id, "");
+                    }
+                }
+                else
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error deserializando informe XML " + informePedido.Id, "");
+                }
+            }
+        }
+            public void GenerarReporteEcommerceCuentaCorriente(Informes_Pedidos informePedido)
         {
             try
             {
@@ -698,12 +752,14 @@ namespace SP_Load_Data
                 string registros = "";
                 foreach (DataRow rowaGenerar in dtArticulosActivos.Rows) //RECORRO LOS MOVIMIENTOS OBTENIDOS
                 {
-                    String ruta = server + "/httpdocs/images/Productos/"+ rowaGenerar[14].ToString() + "\\/";
-                    string[] archivosFTP=null;
-                    if (ftp.directoryListSimple(ruta)!=null)
-                    {
-                        archivosFTP = ftp.directoryListSimple(ruta);
-                    }
+
+                    
+                        String ruta = server + "/httpdocs/images/Productos/" + rowaGenerar[14].ToString() + "\\/";
+                        string[] archivosFTP = null;
+                        if (ftp.directoryListSimple(ruta) != null)
+                        {
+                            archivosFTP = ftp.directoryListSimple(ruta);
+                        }
                     
                     //Gestion_Api.Entitys.articulo artEnt = this.contArtEnt.obtenerArticuloEntity(Convert.ToInt32(rowaGenerar["id"]));
                     System.Data.DataRow rowArchivo = dtCCExportacion.NewRow();
@@ -760,7 +816,114 @@ namespace SP_Load_Data
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "ERROR. Ocurrio un error en Procesar.cs. Metodo: GenerarReporteEcommerceArticulos.", "");
             }
         }
+
+        public void GenerarReporteCobrosRealizadosVendedores(Informes_Pedidos informePedido)
+        {
+            controladorReportes contReport = new controladorReportes();
+
+            //Descargo los archivos del FTP
+            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a descargar archivo XML de configuraciones del informe con id " + informePedido.Id + " desde el FTP ", "");
+            this.descargarArchivosFTP(Settings.Default.rutaFTP + informePedido.Id + "\\", Settings.Default.rutaDescarga + informePedido.Id + "/");
+
+            var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
+            var archivos = directory.GetFiles("*.xml");
+            if (archivos.Length > 0)
+            {
+                //Deserializo el XML con la configuracion del informe
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a deserializar archivo XML de configuraciones con id " + informePedido.Id, "");
+                InformeXML infXML = new InformeXML();
+                infXML = infXML.DeserializarXML(Settings.Default.rutaDescarga + informePedido.Id + '/' + "Informe_" + informePedido.Id + ".xml");
+                if (infXML != null)
+                {
+                    string fechaD = infXML.FechaDesde;
+                    string fechaH = infXML.FechaHasta;
+                    int idCliente = infXML.Cliente;
+                    int idVendedor = infXML.Vendedor;
+                    int idPuntoVta = infXML.PuntoVenta;
+                    int idTipo = infXML.Tipo;
+                    int sucursal = infXML.Sucursal;
+
+
+
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .xls con el informe " + informePedido.Id, "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta del reporte es: " + Settings.Default.rutaReporte + "CobrosVendedoresR.rdlc", "");
+
+
+
+                    DataTable dt = contReport.GenerarReporteCobrosRealizadosVendedores(fechaD, fechaH, idCliente, sucursal, idPuntoVta, idTipo, idVendedor);
+
+
+                    this.ReportViewer1.ProcessingMode = ProcessingMode.Local;
+                    this.ReportViewer1.LocalReport.ReportPath = Settings.Default.rutaReporte + "CobrosVendedoresR.rdlc";
+
+                    ReportDataSource rds = new ReportDataSource("DatosVendedores", dt);
+                    //ReportParameter param = new ReportParameter("ParamSaldo", "saldo");
+
+                    this.ReportViewer1.LocalReport.DataSources.Clear();
+                    this.ReportViewer1.LocalReport.DataSources.Add(rds);
+                    //this.ReportViewer1.LocalReport.SetParameters(param);
+                    this.ReportViewer1.LocalReport.Refresh();
+
+                    //if (this.excel == 1)
+                    //{
+                    //    Warning[] warnings;
+                    //    string mimeType, encoding, fileNameExtension;
+                    //    string[] streams;
+                    //    //get xls content
+                    //    Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("Excel", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
+
+                    //    String filename = string.Format("{0}.{1}", "DetalleCobros_Vendedores", "xls");
+
+
+                    //}
+                    //else
+                    //{
+                    Warning[] warnings;
+                        string mimeType, encoding, fileNameExtension;
+                        string[] streams;
+                    //get pdf content
+                    try
+                    {
+                        Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("PDF", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
+
+                        using (FileStream fs = new FileStream(directory + "\\REPORTE-COBROS-REALIZADOS-VENDEDORES_" + infXML.Id +".pdf" , FileMode.Create))
+                        {
+                            fs.Write(pdfContent, 0, pdfContent.Length);
+                            fs.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+
+                        List<FileInfo> archivosSubir = new List<FileInfo>();
+                        FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + "REPORTE-COBROS-REALIZADOS-VENDEDORES_" + infXML.Id +".pdf");
+                        archivosSubir.Add(fsubir);
+
+                        //Subo los archivos al FTP
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .xls del reporte " + informePedido.Id + " al FTP", "");
+                        this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
+                        //Actualizo el estado del Informe
+                        actualizarEstadoInforme(informePedido.Id);
+                    }
+                    else
+                    {
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error al generar reporte cobros realizados. ID Reporte: " + informePedido.Id, "");
+                    }
+                }
+                else
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error deserializando informe XML " + informePedido.Id, "");
+                }
+        }
         #endregion
+
+
 
         #region FTP
         public void descargarArchivosFTP(string rutaFtp, string rutaLocal)

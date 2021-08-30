@@ -336,7 +336,6 @@ namespace Gestion_Api.Modelo
                 ftpStream.Close();
                 ftpResponse.Close();
                 ftpRequest = null;
-                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_INFO, ServicioLoad.CLog.TAG_OK, "entro a linea 342", "");
                 /* Return the Directory Listing as a string Array by Parsing 'directoryRaw' with the Delimiter you Append (I use | in This Example) */
                 try { string[] directoryList = directoryRaw.Split("|".ToCharArray()); return directoryList; }
                 catch (Exception ex)
@@ -349,7 +348,10 @@ namespace Gestion_Api.Modelo
             }
             catch (Exception ex)
             {
-                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "Error obteniendo directorio del FTP: " + ex.Message, "");
+                if (!directory.Contains("httpdocs/images/Productos"))
+                {
+                    ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "Error obteniendo directorio del FTP: " + ex.Message, "");
+                }
             }
             /* Return an Empty string Array if an Exception Occurs */
             return new string[] { "" };

@@ -12,7 +12,7 @@ namespace SP_Load_Data.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.8.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -55,7 +55,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Proyectos\\Luciano_Diaz\\Servicio_Reportes")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Repos\\SP_LoadData\\")]
         public string rutaReporte {
             get {
                 return ((string)(this["rutaReporte"]));
@@ -76,7 +76,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Proyectos\\Luciano_Diaz\\Servicio_Reportes\\Log\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Repos\\SP_LoadData\\Log")]
         public string Path_Log {
             get {
                 return ((string)(this["Path_Log"]));
@@ -85,7 +85,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Proyectos\\Luciano_Diaz\\Servicio_Reportes\\Descarga Archivos\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Repos\\SP_LoadData\\Descarga Archivos\\")]
         public string rutaDescarga {
             get {
                 return ((string)(this["rutaDescarga"]));

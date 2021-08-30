@@ -51,7 +51,7 @@ namespace SP_Load_Data
                     }
                     catch (Exception ex)
                     {
-
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Entro al catch:" + ex.Message, "catch");
                     }
                     Thread.Sleep(10000);
                 }
@@ -64,7 +64,9 @@ namespace SP_Load_Data
             try
             {
                 ///Para modo Debug, hay que descomentar esa linea
-                InicializarLog();
+                //InicializarLog();
+
+
 
                 Informes_PedidosManager informes_PedidosManager = new Informes_PedidosManager();
                 List<Informes_Pedidos> listaInformesPedidos = new List<Informes_Pedidos>();
@@ -122,6 +124,14 @@ namespace SP_Load_Data
                     {
                         procesar.GenerarReporteEcommerceCuentaCorriente(informePedido);
                     }
+                    if (informes_PedidosManager.EsReporteArticulosMagento(informePedido))
+                    {
+                        procesar.GenerarReporteArticulosMagento(informePedido);
+                    }
+                    if (informes_PedidosManager.EsReporteCobrosRealizadosVendedores(informePedido))
+                    {
+                        procesar.GenerarReporteCobrosRealizadosVendedores(informePedido);
+                    }
                 }
             }
             catch (Exception ex)
@@ -136,12 +146,14 @@ namespace SP_Load_Data
             try
             {
                 ServicioLoad.CLog = new CLogNet(pathlog + logname);
+
                 ServicioLoad.CLog.NameProcess = "Importador";
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Inicia Servicio", "Empieza el servicio");
                 flagInicio = 1;
             }
             catch (Exception ex)
             {
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Entro al catch del log", "catch");
                 return false;
             }
             return true;
