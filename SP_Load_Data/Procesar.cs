@@ -450,6 +450,8 @@ namespace SP_Load_Data
 
         public void GenerarReporteVentasFiltradas(Informes_Pedidos informePedido)
         {
+            try
+            {
             controladorReportes contReport = new controladorReportes();
 
             //Descargo los archivos del FTP
@@ -458,44 +460,192 @@ namespace SP_Load_Data
 
             var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
             var archivos = directory.GetFiles("*.xml");
-            if (archivos.Length > 0)
-            {
-                //Deserializo el XML con la configuracion del informe
-                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a deserializar archivo XML de configuraciones con id " + informePedido.Id, "");
-                InformeXML infXML = new InformeXML();
-                infXML = infXML.DeserializarXML(Settings.Default.rutaDescarga + informePedido.Id + '/' + "Informe_" + informePedido.Id + ".xml");
-                if (infXML != null)
+                if (archivos.Length > 0)
                 {
-                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .xls con el informe " + informePedido.Id, "");
-                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
-                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta del reporte es: " + Settings.Default.rutaReporte + "Reporte_VentasFiltradas.rdlc", "");
-                    string nombreArchivoGenerado = contReport.GenerarReporteVentasFiltradas(Settings.Default.rutaDescarga + informePedido.Id + '/', Settings.Default.rutaReporte + "Reporte_VentasFiltradas.rdlc", infXML.FechaDesde, infXML.FechaHasta, infXML.Sucursal, infXML.Empresa, infXML.Tipo,
-                                                                                infXML.Cliente, infXML.TipoCliente, infXML.Documento, infXML.Anuladas, infXML.ListaPrecio, infXML.Vendedor, infXML.FormaPago, Convert.ToInt32(informePedido.Id));
-                    if (!string.IsNullOrEmpty(nombreArchivoGenerado))
+                    //Deserializo el XML con la configuracion del informe
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a deserializar archivo XML de configuraciones con id " + informePedido.Id, "");
+                    InformeXML infXML = new InformeXML();
+                    infXML = infXML.DeserializarXML(Settings.Default.rutaDescarga + informePedido.Id + '/' + "Informe_" + informePedido.Id + ".xml");
+                    if (infXML != null)
                     {
-                        List<FileInfo> archivosSubir = new List<FileInfo>();
-                        FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + nombreArchivoGenerado);
-                        archivosSubir.Add(fsubir);
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .xls con el informe " + informePedido.Id, "");
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta del reporte es: " + Settings.Default.rutaReporte + "Reporte_VentasFiltradas.rdlc", "");
 
-                        //Subo los archivos al FTP
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .xls del reporte " + informePedido.Id + " al FTP", "");
-                        this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
 
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
-                        //Actualizo el estado del Informe
-                        actualizarEstadoInforme(informePedido.Id);
+                        string fechaD = infXML.FechaDesde;
+                        string fechaH = infXML.FechaHasta;
+                        int Sucursal = infXML.Sucursal;
+                        int Empresa = infXML.Empresa;
+                        int ListaPrecio = infXML.ListaPrecio;
+                        int Cliente = infXML.Cliente;
+                        int Vendedor = infXML.Vendedor;
+                        int Anuladas = infXML.Anuladas;
+                        int FormaPago = infXML.FormaPago;
+                        int Documento = infXML.Documento;
+                        int Tipo = infXML.Tipo;
+                        controladorFacturacion controlador = new controladorFacturacion();
+                        controladorFactEntity controladorFactEntity = new controladorFactEntity();
+
+                        DataTable dtDetalles = controlador.obtenerFacturasRangoTipoDTLista(fechaD, fechaH, Sucursal, Tipo, Cliente, Documento, ListaPrecio, Anuladas, Empresa, Vendedor, FormaPago);
+                        DataTable dtDatos = controlador.obtenerTotalFacturasRango(fechaD, fechaH, Sucursal, Tipo, Empresa);
+                        DataTable dtFechas = controlador.obtenerFechasFactura(fechaD, fechaH);
+
+                        Decimal total = 0;
+
+                        if (dtDetalles.Rows.Count > 0)
+                        {
+                            foreach (DataRow row in dtDetalles.Rows)
+                            {
+
+                                string tipoF = "";
+                                string LetraF = "";
+                                if (row["tipo"].ToString().Contains("Factura"))
+                                {
+                                    tipoF = "Fc";
+                                    LetraF = row["tipo"].ToString().Substring(row["tipo"].ToString().Length - 1, 1);
+                                }
+                                if (row["tipo"].ToString().Contains("Credito"))
+                                {
+                                    tipoF = "Cr";
+                                    LetraF = row["tipo"].ToString().Substring(row["tipo"].ToString().Length - 1, 1);
+                                }
+                                if (row["tipo"].ToString().Contains("Debito"))
+                                {
+                                    tipoF = "De";
+                                    LetraF = row["tipo"].ToString().Substring(row["tipo"].ToString().Length - 1, 1);
+                                }
+
+                                string comprobante = tipoF + " " + LetraF + row["numero"].ToString().Replace("-", "");
+                                row["numero"] = comprobante;
+
+                                string clienteR = row["razonSocial"].ToString();
+                                if (clienteR.Length > 26)
+                                {
+                                    clienteR = clienteR.Substring(0, 26);
+                                }
+                                row["razonSocial"] = clienteR;
+
+
+                                //row["fecha"] = row["fechaFormateada"];
+                                if (row["Tipo"].ToString().Contains("Credito"))
+                                {
+                                    row["Total"] = Convert.ToDecimal(row["Total"].ToString()) * -1;
+                                    row["neto21"] = Convert.ToDecimal(row["neto21"].ToString()) * -1;
+                                    row["subtotal"] = Convert.ToDecimal(row["subtotal"].ToString()) * -1;
+                                    row["retenciones"] = Convert.ToDecimal(row["retenciones"].ToString()) * -1;
+                                    row["netoNoGrabado"] = Convert.ToDecimal(row["netoNoGrabado"].ToString()) * -1;
+
+                                    row["TotalIva105"] = Convert.ToDecimal(row["TotalIva105"].ToString()) * -1;
+                                    row["TotalIva21"] = Convert.ToDecimal(row["TotalIva21"].ToString()) * -1;
+                                    row["TotalIva27"] = Convert.ToDecimal(row["TotalIva27"].ToString()) * -1;
+                                    row["TotalNeto0"] = Convert.ToDecimal(row["TotalNeto0"].ToString()) * -1;
+                                    row["TotalNeto105"] = Convert.ToDecimal(row["TotalNeto105"].ToString()) * -1;
+                                    row["TotalNeto21"] = Convert.ToDecimal(row["TotalNeto21"].ToString()) * -1;
+                                    row["TotalNeto27"] = Convert.ToDecimal(row["TotalNeto27"].ToString()) * -1;
+                                }
+                                //si esta anulada la pongo en cero para que no sume
+                                if (row["estado"].ToString() == "0")
+                                {
+                                    row["Total"] = Convert.ToDecimal(0);
+                                    row["neto21"] = Convert.ToDecimal(0);
+                                    row["subtotal"] = Convert.ToDecimal(0);
+                                    row["retenciones"] = Convert.ToDecimal(0);
+                                    row["netoNoGrabado"] = Convert.ToDecimal(0);
+                                }
+
+                                total += Convert.ToDecimal(row["Total"].ToString());
+                            }
+                        }
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_OK, "Termino de recorrer el foreach", "");
+
+
+                        this.ReportViewer1.ProcessingMode = ProcessingMode.Local;
+                        this.ReportViewer1.LocalReport.ReportPath = Settings.Default.rutaReporte + "Factura.rdlc";
+                        ReportDataSource rds = new ReportDataSource("DetalleFacturas", dtDetalles);
+                        ReportDataSource rds2 = new ReportDataSource("DatosFactura", dtDatos);
+                        ReportDataSource rds3 = new ReportDataSource("FechasFactura", dtFechas);
+
+                        this.ReportViewer1.LocalReport.DataSources.Clear();
+                        this.ReportViewer1.LocalReport.DataSources.Add(rds);
+                        this.ReportViewer1.LocalReport.DataSources.Add(rds2);
+                        this.ReportViewer1.LocalReport.DataSources.Add(rds3);
+
+                        ReportParameter param = new ReportParameter("ParamTotal", total.ToString("C"));
+                        this.ReportViewer1.LocalReport.SetParameters(param);
+
+                        this.ReportViewer1.LocalReport.Refresh();
+
+                        Warning[] warnings;
+
+                        string mimeType, encoding, fileNameExtension;
+
+                        string[] streams;
+
+                        //if (this.excel == 1)
+                        //{
+                        //    Warning[] warnings;
+                        //    string mimeType, encoding, fileNameExtension;
+                        //    string[] streams;
+                        //    //get xls content
+                        //    Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("Excel", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
+
+                        //    String filename = string.Format("{0}.{1}", "DetalleCobros_Vendedores", "xls");
+
+
+
+                        //get pdf content
+                        string nombreArchivoGenerado = directory + "\\REPORTE-VENTAS_" + infXML.Id + ".xls";
+                        try
+                        {
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_OK, "Va a escribir el archivo", "");
+
+                            Byte[] xlsContent = this.ReportViewer1.LocalReport.Render("Excel", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
+
+
+                            using (FileStream fs = new FileStream(nombreArchivoGenerado, FileMode.Create))
+                            {
+                                fs.Write(xlsContent, 0, xlsContent.Length);
+                                fs.Close();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "error escribiendo el archivo " + ex.Message.ToString(), "");
+
+                        }
+                        if (!string.IsNullOrEmpty(nombreArchivoGenerado))
+                        {
+                            List<FileInfo> archivosSubir = new List<FileInfo>();
+                            FileInfo fsubir = new FileInfo(nombreArchivoGenerado);
+                            archivosSubir.Add(fsubir);
+
+                            //Subo los archivos al FTP
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .xls del reporte " + informePedido.Id + " al FTP", "");
+                            this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
+                            //Actualizo el estado del Informe
+                            actualizarEstadoInforme(informePedido.Id);
+                        }
+                        else
+                        {
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error al generar reporte ventas. ID Reporte: " + informePedido.Id, "");
+                        }
                     }
                     else
                     {
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error al generar reporte ventas. ID Reporte: " + informePedido.Id, "");
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error deserializando informe XML " + informePedido.Id, "");
                     }
                 }
-                else
-                {
-                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error deserializando informe XML " + informePedido.Id, "");
-                }
+            }
+            catch (Exception ex)
+            {
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error: " + ex.Message, "");
             }
         }
+
 
         public void GenerarReporteCobrosRealizados(Informes_Pedidos informePedido)
         {
