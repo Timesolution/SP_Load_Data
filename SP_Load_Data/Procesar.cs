@@ -487,7 +487,7 @@ namespace SP_Load_Data
                         controladorFacturacion controlador = new controladorFacturacion();
                         controladorFactEntity controladorFactEntity = new controladorFactEntity();
 
-                        DataTable dtDetalles = controlador.obtenerFacturasRangoTipoDTLista(fechaD, fechaH, Sucursal, Tipo, Cliente, Documento, ListaPrecio, Anuladas, Empresa, Vendedor, FormaPago);
+                        DataTable dtDetalles = controlador.obtenerFacturasRangoTipoDTLista(fechaD, fechaH, Sucursal, Tipo, Cliente, Documento, ListaPrecio, Anuladas, Empresa,0, Vendedor, FormaPago);
                         DataTable dtDatos = controlador.obtenerTotalFacturasRango(fechaD, fechaH, Sucursal, Tipo, Empresa);
                         DataTable dtFechas = controlador.obtenerFechasFactura(fechaD, fechaH);
 
@@ -558,6 +558,7 @@ namespace SP_Load_Data
                             }
                         }
                         ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_OK, "Termino de recorrer el foreach", "");
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_OK, "El objeto tiene :" + dtDetalles.Rows.Count, "");
 
 
                         this.ReportViewer1.ProcessingMode = ProcessingMode.Local;
@@ -575,6 +576,7 @@ namespace SP_Load_Data
                         this.ReportViewer1.LocalReport.SetParameters(param);
 
                         this.ReportViewer1.LocalReport.Refresh();
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_OK, "Linea 579", "");
 
                         Warning[] warnings;
 
