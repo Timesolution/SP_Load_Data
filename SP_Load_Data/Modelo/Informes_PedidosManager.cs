@@ -105,7 +105,24 @@ namespace SP_Load_Data.Modelo
             }
             return false;
         }
-
+        public bool EsReporteEcommerceTxtClientes(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 14)
+            {
+                _appLog.LogInfo("Va a generar el Reporte de Ecommerce de clientes con ID: " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
+        public bool EsReporteEcommerceTxtVendedores(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 15)
+            {
+                _appLog.LogInfo("Va a generar el Reporte de Ecommerce de vendedores con ID: " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
         public bool EsReporteEcommerceTxtCuentaCorriente(Informes_Pedidos informes_Pedidos)
         {
             if (informes_Pedidos.Informe == 10)

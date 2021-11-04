@@ -146,8 +146,70 @@ namespace Gestion_Api.Modelo
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "La excepción es: " + Ex.Message, "");
             }
         }
-
+        public void createDirectory2(string newDirectory)
+        {
+            try
+            {
+                string ftpUrl = Settings.Default.FTP;
+                string ftpUsername = Settings.Default.User;
+                string ftpPassword = Settings.Default.Pass;
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(newDirectory);
+                request.Proxy = new WebProxy(); //-----The requested FTP command is not supported when using HTTP proxy.
+                request.Method = WebRequestMethods.Ftp.MakeDirectory;
+                request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+                request.UseBinary = true;
+                request.UsePassive = true;
+                request.KeepAlive = true;
+                FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+                response.Close();
+                request = null;
+            }
+            catch (Exception ex) { Console.WriteLine(ex.ToString()); }
+            return;
+        }
         /* Delete File */
+        public void deleteFile(string deleteFile)
+        {
+            try
+            {
+                string ftpUrl = Settings.Default.FTP;
+                string ftpUsername = Settings.Default.User;
+                string ftpPassword = Settings.Default.Pass;
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(deleteFile);
+                request.Proxy = new WebProxy(); //-----The requested FTP command is not supported when using HTTP proxy.
+                request.UseBinary = true;
+                request.UsePassive = true;
+                request.KeepAlive = true;
+                request.Method = WebRequestMethods.Ftp.DeleteFile;
+                request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+                FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+                response.Close();
+                request = null;
+            }
+            catch (Exception ex) { Console.WriteLine(ex.ToString()); }
+            return;
+        }
+        public void deleteDirectory(string deleteDirectory)
+        {
+            try
+            {
+                string ftpUrl = Settings.Default.FTP;
+                string ftpUsername = Settings.Default.User;
+                string ftpPassword = Settings.Default.Pass;
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(deleteDirectory);
+                request.Proxy = new WebProxy(); //-----The requested FTP command is not supported when using HTTP proxy.
+                request.UseBinary = true;
+                request.UsePassive = true;
+                request.KeepAlive = true;
+                request.Method = WebRequestMethods.Ftp.RemoveDirectory;
+                request.Credentials = new NetworkCredential(ftpUsername, ftpPassword);
+                FtpWebResponse response = (FtpWebResponse)request.GetResponse();
+                response.Close();
+                request = null;
+            }
+            catch (Exception ex) { Console.WriteLine(ex.ToString()); }
+            return;
+        }
         public void delete(string deleteFile)
         {
             try
@@ -224,6 +286,7 @@ namespace Gestion_Api.Modelo
             catch (Exception ex) { Console.WriteLine(ex.ToString()); }
             return;
         }
+        
 
         /* Get the Date/Time a File was Created */
         public string getFileCreatedDateTime(string fileName)

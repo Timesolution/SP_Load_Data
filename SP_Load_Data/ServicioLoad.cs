@@ -33,7 +33,7 @@ namespace SP_Load_Data
 
         public void InicioThreadProcesamiento()
         {
-            if(flagInicio == 0)
+            if (flagInicio == 0)
             {
                 if (!this.InicializarLog())
                     return;
@@ -66,7 +66,34 @@ namespace SP_Load_Data
                 ///Para modo Debug, hay que descomentar esa linea
                 //InicializarLog();
 
+                ControladorInformesEntity cInformesEntity = new ControladorInformesEntity();
+                controladorReportes cReportes = new controladorReportes();
+                DateTime fechaActual = DateTime.Now;
+                var porHora = fechaActual.Hour % 3;
 
+                if (fechaActual.Minute == 00 && porHora == 0 && Settings.Default.User == "integral")//&& porHora == 0
+                {
+                    var di = new DirectoryInfo(Settings.Default.rutaDescarga + "/txt/");
+                    foreach (DirectoryInfo dir in di.GetDirectories())
+                    {
+
+                        var files = dir.GetFiles();
+                        foreach (var file in files)
+                        {
+                            procesar.eliminarArchivoFTP(dir.Name, file.Name);
+                        }
+                        procesar.eliminarCarpetaFTP(dir.Name);
+                        dir.Delete(true);
+                        cInformesEntity.anularEstadoInformePedidoPorId(Convert.ToInt64(dir.Name));
+                    }
+
+                    GenerarReporteIntegral(fechaActual, 9, "ECOMMERCE-ARTICULOS_");
+                    GenerarReporteIntegral(fechaActual, 14, "ECOMMERCE-CLIENTES_");
+                    GenerarReporteIntegral(fechaActual, 15, "ECOMMERCE-VENDEDORES_");
+                    GenerarReporteIntegral(fechaActual, 10, "ECOMMERCE-CUENTACORRIENTE_");
+                    Thread.Sleep(60000);
+
+                }
 
                 Informes_PedidosManager informes_PedidosManager = new Informes_PedidosManager();
                 List<Informes_Pedidos> listaInformesPedidos = new List<Informes_Pedidos>();
@@ -132,6 +159,15 @@ namespace SP_Load_Data
                     {
                         procesar.GenerarReporteCobrosRealizadosVendedores(informePedido);
                     }
+                    // Clientes y Vendedores
+                    if (informes_PedidosManager.EsReporteEcommerceTxtClientes(informePedido))
+                    {
+                        procesar.GenerarReporteEcommerceClientes(informePedido);
+                    }
+                    if (informes_PedidosManager.EsReporteEcommerceTxtVendedores(informePedido))
+                    {
+                        procesar.GenerarReporteEcommerceVendedores(informePedido);
+                    }
                 }
             }
             catch (Exception ex)
@@ -157,6 +193,26 @@ namespace SP_Load_Data
                 return false;
             }
             return true;
+        }
+        private void GenerarReporteIntegral(DateTime fechaActual, int informe, string nombre)
+        {
+            try
+            {
+                Informes_Pedidos ip = new Informes_Pedidos();
+                InformeXML infXML = new InformeXML();
+                ip.Informe = informe;
+                ip.NombreInforme = nombre;
+                ip.Fecha = fechaActual;
+                ip.Usuario = 1;
+                ip.NombreInforme += (contInfEnt.ObtenerUltimoIdInformePedido() + 1).ToString();
+                ip.Estado = 0;
+
+                string ruta = Settings.Default.rutaDescarga + "/txt/" + (contInfEnt.ObtenerUltimoIdInformePedido() + 1).ToString() + "/";
+                contInfEnt.generarPedidoDeInforme(infXML, ip, true, ruta);
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
     }
