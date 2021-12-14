@@ -161,6 +161,25 @@ namespace SP_Load_Data.Modelo
             }
             return false;
         }
+
+        public bool EsReporteVentasXVendedorPDF(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 16)
+            {
+                _appLog.LogInfo("Va a generar el Reporte de Ventas por Vendedores PDF con ID: " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
+        public bool EsReporteVentasXVendedorExcel(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 17)
+            {
+                _appLog.LogInfo("Va a generar el Reporte de Ventas por Vendedores Excel con ID: " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
     }
 
 }

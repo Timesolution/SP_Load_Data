@@ -24,10 +24,15 @@ namespace SP_Load_Data
         string logname = "ServicioInformes";
         Thread thProceso = null;
         static DateTime timer = new DateTime(1900, 1, 1, 0, 0, 0);
+        string server = Settings.Default.FTP;
+        string user = Settings.Default.User;
+        string pass = Settings.Default.Pass;
         ControladorInformesEntity contInfEnt = new ControladorInformesEntity();
+        ftpClient ftp;
 
         public ServicioLoad()
         {
+            ftp = new ftpClient(this.server, this.user, this.pass);
             _logger = new AppLog();
         }
 
@@ -86,6 +91,18 @@ namespace SP_Load_Data
                         dir.Delete(true);
                         cInformesEntity.anularEstadoInformePedidoPorId(Convert.ToInt64(dir.Name));
                     }
+
+                    string server = Settings.Default.FTP + Settings.Default.rutaFTP;
+
+
+                    ftp.deleteFile(server  + "integral/articulos.txt" );
+                    ftp.deleteFile(server  + "integral/cuentacorriente.txt" );
+                    ftp.deleteFile(server  + "integral/vendedores.txt" );
+                    ftp.deleteFile(server  + "integral/clientes.txt" );
+
+
+
+
 
                     GenerarReporteIntegral(fechaActual, 9, "ECOMMERCE-ARTICULOS_");
                     GenerarReporteIntegral(fechaActual, 14, "ECOMMERCE-CLIENTES_");
@@ -167,6 +184,14 @@ namespace SP_Load_Data
                     if (informes_PedidosManager.EsReporteEcommerceTxtVendedores(informePedido))
                     {
                         procesar.GenerarReporteEcommerceVendedores(informePedido);
+                    }
+                    if (informes_PedidosManager.EsReporteVentasXVendedorPDF(informePedido))
+                    {
+                        procesar.GenerarReporteVentasXVendedorPDF(informePedido);
+                    }
+                    if (informes_PedidosManager.EsReporteVentasXVendedorExcel(informePedido))
+                    {
+                        procesar.GenerarReporteVentasXVendedorExcel(informePedido);
                     }
                 }
             }
