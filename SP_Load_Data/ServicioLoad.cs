@@ -74,9 +74,8 @@ namespace SP_Load_Data
                 ControladorInformesEntity cInformesEntity = new ControladorInformesEntity();
                 controladorReportes cReportes = new controladorReportes();
                 DateTime fechaActual = DateTime.Now;
-                var porHora = fechaActual.Hour % 3;
 
-                if (fechaActual.Minute == 00 && porHora == 0 && Settings.Default.User == "integral")//&& porHora == 0
+                if ((fechaActual.Hour > 7 && fechaActual.Hour < 18) && (fechaActual.Minute == 30 || fechaActual.Minute == 00) && Settings.Default.User == "integral")//&& porHora == 0
                 {
                     var di = new DirectoryInfo(Settings.Default.rutaDescarga + "/txt/");
                     foreach (DirectoryInfo dir in di.GetDirectories())
@@ -115,7 +114,7 @@ namespace SP_Load_Data
                 Informes_PedidosManager informes_PedidosManager = new Informes_PedidosManager();
                 List<Informes_Pedidos> listaInformesPedidos = new List<Informes_Pedidos>();
                 listaInformesPedidos = contInfEnt.obtenerInformesPedidosPendientes();
-
+                
                 //Si hay informe/s pendiente/s descargo por ftp el archivo XML de parametros
                 foreach (var informePedido in listaInformesPedidos)
                 {

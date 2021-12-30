@@ -164,7 +164,7 @@ namespace SP_Load_Data.Modelo
 
         public bool EsReporteVentasXVendedorPDF(Informes_Pedidos informes_Pedidos)
         {
-            if (informes_Pedidos.Informe == 16)
+            if (informes_Pedidos.Informe == 16 || informes_Pedidos.Informe == 18)
             {
                 _appLog.LogInfo("Va a generar el Reporte de Ventas por Vendedores PDF con ID: " + informes_Pedidos.Id);
                 return true;
@@ -173,7 +173,7 @@ namespace SP_Load_Data.Modelo
         }
         public bool EsReporteVentasXVendedorExcel(Informes_Pedidos informes_Pedidos)
         {
-            if (informes_Pedidos.Informe == 17)
+            if (informes_Pedidos.Informe == 17 || informes_Pedidos.Informe == 19)
             {
                 _appLog.LogInfo("Va a generar el Reporte de Ventas por Vendedores Excel con ID: " + informes_Pedidos.Id);
                 return true;
