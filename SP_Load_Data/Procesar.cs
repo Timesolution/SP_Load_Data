@@ -267,9 +267,9 @@ namespace SP_Load_Data
                             }
                         }
 
-                        if (cliente == -1 && tipo == 0)
-                            dtFinal = AgregarFilaSeparadora(dtnuevo);
-                        else
+                        //if (cliente == -1 && tipo == 0)
+                        //    dtFinal = AgregarFilaSeparadora(dtnuevo);
+                        //else
                             dtFinal = dtnuevo;
 
                         Decimal total = saldo;
