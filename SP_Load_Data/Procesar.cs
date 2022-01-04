@@ -221,11 +221,16 @@ namespace SP_Load_Data
                             }
 
                         }
+                        else if (informePedido.Informe == 18)
+                        {
+                            dtnuevo = controlador.ventasycobroXvendedor(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
+                        }
                         else
                         {
+                            dtnuevo = controlador.obtenerDetalleVentasByFecha(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
+
                             //dtDetalles = this.controlador.obtenerDetalleVentasByFecha(fechaD, fechaH, suc, this.emp, tipo, cliente, tipofact, this.lista, this.anuladas, this.vendedor, this.formaPago);
                             //dtCobro = this.controlador.ObtenerCobrosbyCliente(fechaD, fechaH, cliente);
-                            dtnuevo = controlador.ventasycobroXvendedor(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
                         }
                         DataTable dtDatos = controlador.obtenerTotalFacturasRango(fechaD, fechaH, suc, tipo, emp);
                         DataColumn dcSaldo = new DataColumn();
@@ -308,7 +313,15 @@ namespace SP_Load_Data
                         string[] streams;
 
 
-
+                        string archivo;
+                        if (informePedido.Informe == 18)
+                        {
+                            archivo = "REPORTE-VENTAS-VENDEDOR-COBROS_";
+                        }
+                        else
+                        {
+                            archivo = "REPORTE-VENTAS-VENDEDOR_";
+                        }
 
                         //if (this.excel == 1)
                         //{
@@ -331,7 +344,7 @@ namespace SP_Load_Data
 
                                 Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("PDF", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
 
-                                using (FileStream fs = new FileStream(directory + "\\REPORTE-VENTAS-VENDEDOR_" + infXML.Id + ".pdf", FileMode.Create))
+                                using (FileStream fs = new FileStream(directory + "\\" + archivo + infXML.Id + ".pdf", FileMode.Create))
                                 {
                                     fs.Write(pdfContent, 0, pdfContent.Length);
                                     fs.Close();
@@ -344,7 +357,7 @@ namespace SP_Load_Data
                         }
 
                         List<FileInfo> archivosSubir = new List<FileInfo>();
-                        FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + "REPORTE-VENTAS-VENDEDOR_" + infXML.Id + ".pdf");
+                        FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + archivo + infXML.Id + ".pdf");
                         archivosSubir.Add(fsubir);
 
                         //Subo los archivos al FTP
@@ -438,11 +451,16 @@ namespace SP_Load_Data
                             }
 
                         }
+                        else if (informePedido.Informe == 19)
+                        {
+                            dtnuevo = controlador.ventasycobroXvendedor(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
+                        }
                         else
                         {
+                            dtnuevo = controlador.obtenerDetalleVentasByFecha(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
+
                             //dtDetalles = this.controlador.obtenerDetalleVentasByFecha(fechaD, fechaH, suc, this.emp, tipo, cliente, tipofact, this.lista, this.anuladas, this.vendedor, this.formaPago);
                             //dtCobro = this.controlador.ObtenerCobrosbyCliente(fechaD, fechaH, cliente);
-                            dtnuevo = controlador.ventasycobroXvendedor(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
                         }
                         DataTable dtDatos = controlador.obtenerTotalFacturasRango(fechaD, fechaH, suc, tipo, emp);
                         DataColumn dcSaldo = new DataColumn();
@@ -543,12 +561,23 @@ namespace SP_Load_Data
                         //{
 
                         //get pdf content
+
+                        string archivo;
+                        if (informePedido.Informe == 19)
+                        {
+                            archivo = "REPORTE-VENTAS-VENDEDOR-COBROS_";
+                        }
+                        else
+                        {
+                            archivo = "REPORTE-VENTAS-VENDEDOR_";
+                        }
                         try
                         {
-                          
+                  
+                            
                                 Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("Excel", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
 
-                                using (FileStream fs = new FileStream(directory + "\\REPORTE-VENTAS-VENDEDOR_" + infXML.Id + ".xls", FileMode.Create))
+                                using (FileStream fs = new FileStream(directory + "\\" + archivo  + infXML.Id + ".xls", FileMode.Create))
                                 {
                                     fs.Write(pdfContent, 0, pdfContent.Length);
                                     fs.Close();
@@ -561,7 +590,7 @@ namespace SP_Load_Data
                         }
 
                         List<FileInfo> archivosSubir = new List<FileInfo>();
-                        FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + "REPORTE-VENTAS-VENDEDOR_" + infXML.Id + ".xls");
+                        FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + archivo + infXML.Id + ".xls");
                         archivosSubir.Add(fsubir);
 
                         //Subo los archivos al FTP
