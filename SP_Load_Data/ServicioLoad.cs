@@ -69,7 +69,7 @@ namespace SP_Load_Data
             try
             {
                 ///Para modo Debug, hay que descomentar esa linea
-                //InicializarLog();
+                InicializarLog();
 
                 ControladorInformesEntity cInformesEntity = new ControladorInformesEntity();
                 controladorReportes cReportes = new controladorReportes();
@@ -191,6 +191,10 @@ namespace SP_Load_Data
                     if (informes_PedidosManager.EsReporteVentasXVendedorExcel(informePedido))
                     {
                         procesar.GenerarReporteVentasXVendedorExcel(informePedido);
+                    }
+                    if (informes_PedidosManager.EsReporteDetalleVentas(informePedido))
+                    {
+                        procesar.GenerarReporteDetalleVentas(informePedido);
                     }
                 }
             }

@@ -287,7 +287,7 @@ namespace SP_Load_Data
                         //    this.ReportViewer1.LocalReport.ReportPath = Settings.Default.rutaReporte + "DetalleVentasVendedores.rdlc";
 
                         //else
-                            this.ReportViewer1.LocalReport.ReportPath = Settings.Default.rutaReporte + "DetalleVentasVendedoresMartinez.rdlc";
+                        this.ReportViewer1.LocalReport.ReportPath = Settings.Default.rutaReporte + "DetalleVentasVendedoresMartinez.rdlc";
 
                         ReportDataSource rds = new ReportDataSource("DetalleFacturas", dtFinal);
                         ReportDataSource rds2 = new ReportDataSource("DatosFacturas", dtDatos);
@@ -342,14 +342,14 @@ namespace SP_Load_Data
                         try
                         {
 
-                                Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("PDF", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
+                            Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("PDF", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
 
-                                using (FileStream fs = new FileStream(directory + "\\" + archivo + infXML.Id + ".pdf", FileMode.Create))
-                                {
-                                    fs.Write(pdfContent, 0, pdfContent.Length);
-                                    fs.Close();
-                                }
-                            
+                            using (FileStream fs = new FileStream(directory + "\\" + archivo + infXML.Id + ".pdf", FileMode.Create))
+                            {
+                                fs.Write(pdfContent, 0, pdfContent.Length);
+                                fs.Close();
+                            }
+
                         }
                         catch (Exception ex)
                         {
@@ -573,16 +573,16 @@ namespace SP_Load_Data
                         }
                         try
                         {
-                  
-                            
-                                Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("Excel", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
 
-                                using (FileStream fs = new FileStream(directory + "\\" + archivo  + infXML.Id + ".xls", FileMode.Create))
-                                {
-                                    fs.Write(pdfContent, 0, pdfContent.Length);
-                                    fs.Close();
-                                }
-                            
+
+                            Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("Excel", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
+
+                            using (FileStream fs = new FileStream(directory + "\\" + archivo + infXML.Id + ".xls", FileMode.Create))
+                            {
+                                fs.Write(pdfContent, 0, pdfContent.Length);
+                                fs.Close();
+                            }
+
                         }
                         catch (Exception ex)
                         {
@@ -620,6 +620,173 @@ namespace SP_Load_Data
             }
 
         }
+
+        public void GenerarReporteDetalleVentas(Informes_Pedidos informePedido)
+        {
+            try
+            {
+                controladorFacturacion controlador = new controladorFacturacion();
+
+                controladorReportes contReport = new controladorReportes();
+
+                //Descargo los archivos del FTP
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a descargar archivo XML de configuraciones del informe con id " + informePedido.Id + " desde el FTP ", "");
+                this.descargarArchivosFTP(Settings.Default.rutaFTP + informePedido.Id + "\\", Settings.Default.rutaDescarga + informePedido.Id + "/");
+
+                var directory = new DirectoryInfo(Settings.Default.rutaDescarga + informePedido.Id + "/");
+                var archivos = directory.GetFiles("*.xml");
+                if (archivos.Length > 0)
+                {
+                    //Deserializo el XML con la configuracion del informe
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a deserializar archivo XML de configuraciones con id " + informePedido.Id, "");
+                    InformeXML infXML = new InformeXML();
+                    infXML = infXML.DeserializarXML(Settings.Default.rutaDescarga + informePedido.Id + '/' + "Informe_" + informePedido.Id + ".xml");
+                    if (infXML != null)
+                    {
+                        string fechaD = infXML.FechaDesde;
+                        string fechaH = infXML.FechaHasta;
+                        int cliente = infXML.Cliente;
+                        int vendedor = infXML.Vendedor;
+                        int idPuntoVta = infXML.PuntoVenta;
+                        int tipo = infXML.Tipo;
+                        int suc = infXML.Sucursal;
+                        int emp = infXML.Empresa;
+                        int formaPago = infXML.FormaPago;
+                        int tipofact = infXML.Documento;
+                        int lista = infXML.ListaPrecio;
+                        int anuladas = infXML.Anuladas;
+                        int excel = infXML.Excel;
+
+
+
+
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .xls con el informe " + informePedido.Id, "");
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta del reporte es: " + Settings.Default.rutaReporte + "CobrosVendedoresR.rdlc", "");
+
+
+                        DataTable dtDetalles = new DataTable();
+
+                        if (tipo > 0)
+                        {
+                            if (tipo == 1)
+                            {
+                                dtDetalles = controlador.obtenerIngresosBrutosByFecha(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
+                            }
+                            else
+                            {
+                                dtDetalles = controlador.obtenerDetalleVentasPresupuestoByFecha(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
+                            }
+
+                        }
+                        else
+                        {
+                            dtDetalles = controlador.obtenerDetalleVentasByFecha(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
+                        }
+
+                        DataTable dtDatos = controlador.obtenerTotalFacturasRango(fechaD, fechaH, suc, tipo, emp);
+
+                        Decimal total = 0;
+
+                        this.ReportViewer1.ProcessingMode = ProcessingMode.Local;
+                        this.ReportViewer1.LocalReport.ReportPath = Settings.Default.rutaReporte + "DetallesVentasR.rdlc";
+                        ReportDataSource rds = new ReportDataSource("DetalleFacturas", dtDetalles);
+                        ReportDataSource rds2 = new ReportDataSource("DatosFacturas", dtDatos);
+
+                        ReportParameter param = new ReportParameter("ParamDesde", fechaD);
+                        ReportParameter param2 = new ReportParameter("ParamHasta", fechaH);
+                        ReportParameter param3 = new ReportParameter("ParamTotal", total.ToString("C"));
+
+                        this.ReportViewer1.LocalReport.DataSources.Clear();
+                        this.ReportViewer1.LocalReport.DataSources.Add(rds);
+                        this.ReportViewer1.LocalReport.DataSources.Add(rds2);
+
+                        this.ReportViewer1.LocalReport.SetParameters(param);
+                        this.ReportViewer1.LocalReport.SetParameters(param2);
+                        this.ReportViewer1.LocalReport.SetParameters(param3);
+
+                        this.ReportViewer1.LocalReport.Refresh();
+
+                        Warning[] warnings;
+
+                        string mimeType, encoding, fileNameExtension;
+
+                        string[] streams;
+
+                        string archivo = "REPORTE-DETALLE-VENTAS_";
+
+                        if (excel == 1)
+                        {
+                            try
+                            {
+
+
+                                Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("Excel", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
+
+                                using (FileStream fs = new FileStream(directory + "\\" + archivo + infXML.Id + ".xls", FileMode.Create))
+                                {
+                                    fs.Write(pdfContent, 0, pdfContent.Length);
+                                    fs.Close();
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                        }
+                        else
+                        {
+                            try
+                            {
+
+                                Byte[] pdfContent = this.ReportViewer1.LocalReport.Render("PDF", null, out mimeType, out encoding, out fileNameExtension, out streams, out warnings);
+
+                                using (FileStream fs = new FileStream(directory + "\\" + archivo + infXML.Id + ".pdf", FileMode.Create))
+                                {
+                                    fs.Write(pdfContent, 0, pdfContent.Length);
+                                    fs.Close();
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                        }
+                        List<FileInfo> archivosSubir = new List<FileInfo>();
+                        if (excel == 0)
+                        {
+                            FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + archivo + infXML.Id + ".pdf");
+                            archivosSubir.Add(fsubir);
+                        }
+                        else
+                        {
+                            FileInfo fsubir = new FileInfo(Settings.Default.rutaDescarga + informePedido.Id + '/' + archivo + infXML.Id + ".xls");
+                            archivosSubir.Add(fsubir);
+
+                        }
+
+                        //Subo los archivos al FTP
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .xls del reporte " + informePedido.Id + " al FTP", "");
+                        this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
+
+
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
+                        //Actualizo el estado del Informe
+                        actualizarEstadoInforme(informePedido.Id);
+                    }
+
+                }
+                
+            }
+            catch (Exception ex)
+            {
+
+            }
+                    }
 
         private DataTable AgregarFilaSeparadora(DataTable dt)
         {
