@@ -2090,6 +2090,42 @@ namespace SP_Load_Data
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error obteniendo archivos de FTP.  " + rutaFtp + " " + rutaLocal, "");
             }
         }
+
+        public void descargarArchivos(string rutaFtp, string rutaLocal)
+        {
+            try
+            {
+                String ruta = server + "/" + rutaFtp + "/";
+                string[] archivosFTP = ftp.listaDeCarpetas(ruta);
+
+                //descargo
+
+                foreach (var arch in archivosFTP)
+                {
+                    if (!String.IsNullOrEmpty(arch) && arch == "cd_compras.txt")
+                    {
+                        string file = ruta + arch;
+
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_INFO, ServicioLoad.CLog.TAG_OK, "Archivo : " + file + " Encontrado en ftp", "");
+
+                        if (!Directory.Exists(rutaLocal))
+                        {
+                            //sino existe el directorio lo creo
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_INFO, ServicioLoad.CLog.TAG_OK, "Creo directorio de descarga " + rutaLocal, "");
+                            Directory.CreateDirectory(rutaLocal);
+                        }
+
+                        //descargo el archivo
+                        ftp.descargarCDCompras(file, rutaLocal + "/" + arch);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Error obteniendo archivos de FTP.  " + rutaFtp + " " + rutaLocal, "");
+            }
+        }
+
         public void subirArchivosFTP(List<FileInfo> archivosSubir, string rutaFtp)
         {
             try
