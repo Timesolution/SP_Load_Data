@@ -28,6 +28,7 @@ namespace SP_Load_Data
         string user = Settings.Default.User;
         string pass = Settings.Default.Pass;
         ControladorInformesEntity contInfEnt = new ControladorInformesEntity();
+        ControladorPedidoEntity contPedEnt = new ControladorPedidoEntity();
         ftpClient ftp;
 
         public ServicioLoad()
@@ -107,6 +108,10 @@ namespace SP_Load_Data
                     GenerarReporteIntegral(fechaActual, 14, "ECOMMERCE-CLIENTES_");
                     GenerarReporteIntegral(fechaActual, 15, "ECOMMERCE-VENDEDORES_");
                     GenerarReporteIntegral(fechaActual, 10, "ECOMMERCE-CUENTACORRIENTE_");
+
+                    //Importar pedidos
+                    importarPedidos();
+
                     Thread.Sleep(60000);
 
                 }
@@ -192,6 +197,14 @@ namespace SP_Load_Data
                     {
                         procesar.GenerarReporteVentasXVendedorExcel(informePedido);
                     }
+                    if (informes_PedidosManager.EsReporteDetalleVentas(informePedido))
+                    {
+                        procesar.GenerarReporteDetalleVentas(informePedido);
+                    }
+                    if (informes_PedidosManager.EsReporteArticuloExportacionPrecioCSV(informePedido))
+                    {
+                        procesar.ExportadorPrecios(informePedido);
+                    }
                 }
             }
             catch (Exception ex)
@@ -239,5 +252,37 @@ namespace SP_Load_Data
             }
         }
 
+        private void importarPedidos()
+        {
+            try
+            {
+                Procesar procesar = new Procesar();
+                string rutaFtp = "";
+                string rutaLocal = Settings.Default.rutaDescarga + "impDePedidos";
+                procesar.descargarArchivos(rutaFtp, rutaLocal);
+
+                var path = Settings.Default.rutaDescarga + "impDePedidos/cd_compras.txt";
+
+                var archivo = new FileStream(path, FileMode.Open, FileAccess.Read);
+
+                string mensaje = contPedEnt.ImportarPedidosTXT(archivo).ToString();
+                archivo.Close();
+
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+
+                if (mensaje != "Importado correctamente")
+                {
+                    contPedEnt.alertasImportPedidosAutom(DateTime.Now + " " + mensaje);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "ServicioLoad-importarPedidos. Error al importar pedidos: " + ex.Message, "catch");
+            }
+        }
     }
 }

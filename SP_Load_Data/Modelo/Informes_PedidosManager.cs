@@ -180,6 +180,24 @@ namespace SP_Load_Data.Modelo
             }
             return false;
         }
+        public bool EsReporteDetalleVentas(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 20 || informes_Pedidos.Informe == 21)
+            {
+                _appLog.LogInfo("Va a generar el Reporte de detalle Ventas  con ID: " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
+        public bool EsReporteArticuloExportacionPrecioCSV(Informes_Pedidos informes_Pedidos)
+        {
+            if (informes_Pedidos.Informe == 22)
+            {
+                _appLog.LogInfo("Va a extraer el archivo creado En Articulos  ID: " + informes_Pedidos.Id);
+                return true;
+            }
+            return false;
+        }
     }
 
 }
