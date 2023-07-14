@@ -101,9 +101,6 @@ namespace SP_Load_Data
                     ftp.deleteFile(server  + "integral/clientes.txt" );
 
 
-
-
-
                     GenerarReporteIntegral(fechaActual, 9, "ECOMMERCE-ARTICULOS_");
                     GenerarReporteIntegral(fechaActual, 14, "ECOMMERCE-CLIENTES_");
                     GenerarReporteIntegral(fechaActual, 15, "ECOMMERCE-VENDEDORES_");
@@ -119,7 +116,9 @@ namespace SP_Load_Data
                 Informes_PedidosManager informes_PedidosManager = new Informes_PedidosManager();
                 List<Informes_Pedidos> listaInformesPedidos = new List<Informes_Pedidos>();
                 listaInformesPedidos = contInfEnt.obtenerInformesPedidosPendientes();
-                
+
+                String NombreServidor = Settings.Default.FTP;
+
                 //Si hay informe/s pendiente/s descargo por ftp el archivo XML de parametros
                 foreach (var informePedido in listaInformesPedidos)
                 {
@@ -205,11 +204,22 @@ namespace SP_Load_Data
                     {
                         procesar.ExportadorPrecios(informePedido);
                     }
+                    if (informes_PedidosManager.EsActualizarCostosDS(informePedido))
+                    {
+                        procesar.AumentarCostosDS();
+                    }
+                    if (informes_PedidosManager.EsImportacionArticulos(informePedido))
+                    {
+                        procesar.ImportarArticulosDesdeCSV(Convert.ToInt32(informePedido.Id),informePedido.NombreInforme,informePedido.Observaciones);
+                    }
+
                 }
             }
             catch (Exception ex)
             {
                 ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: En Importar Load Data. Excepcion: " + ex.Message, "");
+                _logger.LogInfo("Excepción: " + ex.ToString());
+
                 return;
             }
         }
@@ -239,7 +249,7 @@ namespace SP_Load_Data
                 InformeXML infXML = new InformeXML();
                 ip.Informe = informe;
                 ip.NombreInforme = nombre;
-                ip.Fecha = fechaActual;
+                ip.Fecha = Convert.ToDateTime(fechaActual);
                 ip.Usuario = 1;
                 ip.NombreInforme += (contInfEnt.ObtenerUltimoIdInformePedido() + 1).ToString();
                 ip.Estado = 0;

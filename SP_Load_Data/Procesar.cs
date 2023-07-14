@@ -16,6 +16,8 @@ using System.Web;
 using Microsoft.Reporting.WebForms;
 using System.Globalization;
 using System.Threading;
+using SP_Load_Data.Modelo.Logger;
+using System.Data.SqlClient;
 
 namespace SP_Load_Data
 {
@@ -276,7 +278,7 @@ namespace SP_Load_Data
                         //if (cliente == -1 && tipo == 0)
                         //    dtFinal = AgregarFilaSeparadora(dtnuevo);
                         //else
-                            dtFinal = dtnuevo;
+                        dtFinal = dtnuevo;
 
                         Decimal total = saldo;
 
@@ -417,7 +419,7 @@ namespace SP_Load_Data
                         //    Directory.CreateDirectory(rutaCSV);
                         //}
 
-                         cr.generarArchivoExportadorArticulosPrecio(directory.ToString(), marca, grupo, informePedido.NombreInforme);
+                        cr.generarArchivoExportadorArticulosPrecio(directory.ToString(), marca, grupo, informePedido.NombreInforme);
 
                     }
                 }
@@ -842,13 +844,13 @@ namespace SP_Load_Data
                     }
 
                 }
-                
+
             }
             catch (Exception ex)
             {
 
             }
-                    }
+        }
 
         private DataTable AgregarFilaSeparadora(DataTable dt)
         {
@@ -990,10 +992,10 @@ namespace SP_Load_Data
 
                 //Descargo los archivos del FTP
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a descargar archivo XML de configuraciones del informe con id " + ip.Id + " desde el FTP ", "");
-                this.descargarArchivosFTP(Settings.Default.rutaFTP + ip.Id + "\\", Settings.Default.rutaDescarga + ip.Id + "/");
+                this.descargarArchivosFTP(Settings.Default.rutaFTP + "/" + ip.Id + "/", Settings.Default.rutaDescarga + ip.Id + "\\");
 
                 //Obtengo el XML con las configuraciones del informe
-                var directory = new DirectoryInfo(Settings.Default.rutaDescarga + ip.Id + "/");
+                var directory = new DirectoryInfo(Settings.Default.rutaDescarga + ip.Id + "\\");
                 var archivos = directory.GetFiles("*.xml");
                 if (archivos.Length > 0)
                 {
@@ -2117,7 +2119,7 @@ namespace SP_Load_Data
 
 
 
-        #region FTP
+        #region ACCIONES FTP
         public void descargarArchivosFTP(string rutaFtp, string rutaLocal)
         {
             try
@@ -3144,6 +3146,376 @@ namespace SP_Load_Data
                 }
             }
         }
+
+        public void AumentarCostosDS()
+        {
+            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Entre en AumentarCostosDS", "");
+
+            try
+            {
+
+                String Path = "";
+                //  StreamReader();
+                String FechaSolicitud = string.Empty;
+                int IdSolicitud = 0;
+
+                //controladorInformes ci = new controladorInformes();
+
+
+                DataTable ip = InformePedido();
+                foreach (DataRow dr in ip.Rows)
+                {
+
+                    FechaSolicitud = dr["fecha"].ToString();
+                    IdSolicitud = Convert.ToInt32(dr["Id"]);
+
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Leo el informe " + IdSolicitud, "");
+
+
+                    String[] Fecha = FechaSolicitud.Split(' ');
+
+                    FechaSolicitud = Fecha[0];
+                    String NewFechaSolicitud = FechaSolicitud.Replace("/", "-");
+                    String dia = DateTime.Today.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
+                    String FechaArchivo = DateTime.Today.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+                    FechaArchivo = FechaArchivo.Replace("/", "-");
+                    DateTime Fecha1 = Convert.ToDateTime(NewFechaSolicitud);
+                    DateTime Fecha2 = Convert.ToDateTime(dia);
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Fecha1: " + Fecha1 + " Fecha2: " + Fecha2, "");
+
+
+                    if (DateTime.Compare(Fecha1, Fecha2) == 0)
+                    {
+                        //Producción:
+                        String path = "C:\\Inetpub\\vhosts\\deportshow.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
+                        //  var directory = new DirectoryInfo(Settings.Default.rutaDescarga + ip.Id + "\\");
+
+                        //Local:
+                        //String path = "C:\\Users\\PC\\Desktop\\Time Solution\\Repositorios_\\Gestion Web\\Gestion Web\\Formularios\\Costos_Aumento\\Actualizacion;" + NewFechaSolicitud + ".txt";
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "El path es: " + path, "");
+                        String[] Archivo = File.ReadAllLines(path);//System.IO.File.ReadLines(@"desktop\\etc\\");
+                        String DatosArchivo = string.Empty;
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Leí el archivo" + Archivo, "");
+
+                        for (int i = 0; i < Archivo.Length; i++)
+                        {
+                            DatosArchivo = Archivo[i];
+
+                            String[] MarcasyCostos = DatosArchivo.Split('|');
+
+                            int IdArchivo = Convert.ToInt32(MarcasyCostos[0]);
+
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Entre en el primer for. IdArchivo: " + IdArchivo, "");
+
+                            if (IdSolicitud == IdArchivo)
+                            {
+
+                                DataTable estadoinfo = EstadoInforme(IdSolicitud);
+
+                                int estado = 0;
+                                foreach (DataRow rd in estadoinfo.Rows)
+                                {
+                                    estado = Convert.ToInt32(rd["Estado"]);
+                                }
+
+                                if (estado == 0)
+                                {
+                                    for (int j = 0; j < MarcasyCostos.Length; j++)
+                                    {
+                                        String Marca = "0";
+                                        String CostoPorcentaje = "0";
+
+
+                                        String[] MarcaCosto = MarcasyCostos[j].Split(',');
+
+                                        Marca = MarcaCosto[0];
+
+                                        if (MarcaCosto.Length > 1)
+                                        {
+                                            CostoPorcentaje = MarcaCosto[1];
+
+
+
+
+                                            DataTable Marcas = TablaMarcas(Marca);
+                                            bool Pase = false;
+                                            int Marc = Convert.ToInt32(Marca);
+
+
+                                            foreach (DataRow mr in Marcas.Rows)
+                                            {
+                                                Marc = Convert.ToInt32(mr["id"]);
+
+                                                Console.WriteLine("- Comienza a actualizar las Marcas " + mr["marca"].ToString() + ". ID: " + mr["Id"] + " -");
+                                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "- Comienza a actualizar las Marcas " + mr["marca"].ToString() + ". ID: " + mr["Id"] + " -", "");
+
+                                                DataTable ArticulosTodos = BuscarArtiXMarca(Marc);
+
+                                                int Articulo = 0;
+
+                                                decimal porcentaje = Convert.ToDecimal(CostoPorcentaje);
+                                                int funciona = 0, funciona2 = 0;
+
+                                                foreach (DataRow drat in ArticulosTodos.Rows)
+                                                {
+                                                    Articulo = Convert.ToInt32(drat["id"]);
+
+                                                    funciona = controladorArticulo.aumentarPrecioPorcentaje(Articulo, porcentaje);
+
+                                                    ActualizarFecha(Articulo);
+
+
+                                                    if (funciona > 0)
+                                                    {
+                                                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Actualice el articulo " + Articulo, "");
+
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.WriteLine("No se pudo actualizar el costo porcentaje...");
+
+                                                    }
+
+                                                }
+                                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Termino de actualizar la Marca N° " + Marca + "", "");
+
+                                                Console.WriteLine("Termino de actualizar la Marca N° " + Marca + "");
+                                                Console.WriteLine("...");
+                                                Console.WriteLine("...");
+
+
+
+                                            }
+
+                                        }
+                                    }
+
+
+                                }
+                                actualizarEstadoInforme(IdSolicitud);
+
+
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Excepción en AumentarCostosDS(): " + ex.ToString(), "");
+
+            }
+        }
+
+
+        public void ImportarArticulosDesdeCSV(int idInforme, String NombreArchivo, String Sucursal_Usuario)
+        {
+            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Entre en ImportarArticulosDesdeCSV", "");
+            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "idInforme: "+idInforme + " nombreArchivo: "+NombreArchivo+" Sucursal y Usuario:" + Sucursal_Usuario, "");
+
+            ControladorInformesEntity contInforme = new ControladorInformesEntity(); 
+
+            try
+            {
+                //1- Descargamos los archivos del ftp
+
+                String RutaFTP = "/httpdocs/Importacion/ImportacionArticulos";
+                String RutaLocalServidor = "C:\\Users\\PC\\Desktop\\Time Solution\\Repositorios_\\SP_LOAD_DATA\\Descarga Archivos\\Importar Articulos\\";
+                //String RutaLocalServidor = "C:\\Users\\Administrator\\Documents\\Servicios TimeSolution\\Servicio Reportes\\LaFuente\\Descarga Archivos\\Importar Articulos\\";
+                bool Directorio = Directory.Exists(RutaLocalServidor);
+
+                if (!Directorio)
+                {
+                    Directory.CreateDirectory(RutaLocalServidor);
+                }
+
+                this.descargarArchivosFTP(RutaFTP, RutaLocalServidor);
+
+                //2- Leemos y buscamos el archivo en el directorio del servidor/escritorio  que pasamos como parametro a esta función
+
+                RutaLocalServidor += NombreArchivo + ".csv";
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "El path es: "+ RutaLocalServidor, "");
+
+                // String[] ArchivosArray = File.ReadAllLines(RutaLocal);// Lee el contenido del archivo de una
+
+                String MensajeImportacion = "";
+
+                using (FileStream fs = new FileStream(RutaLocalServidor, FileMode.Open, FileAccess.Read))
+                {
+                    StreamReader memoryStream = new StreamReader(fs);
+                    //fs.CopyTo(memoryStream);
+
+                    //4-lo envíamos a Importar Articulos en el Gestion API
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Paso el archivo "+ memoryStream + " hacia el API", "");
+
+
+                    String[] ObservacionesDatos = Sucursal_Usuario.Split('-');
+                    int IdSucursal = Convert.ToInt32(ObservacionesDatos[0]);
+                    int IdUsuario =  Convert.ToInt32(ObservacionesDatos[1]);
+
+                    try
+                    {
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Envío los datos la API IdSucursal: " + IdSucursal + " IdUsuario:" + IdUsuario, "");
+
+                        MensajeImportacion = controladorArticulo.ImportarActualizarArticulos(memoryStream, ".csv", IdSucursal, IdUsuario);
+                    }
+                    catch (Exception ex)
+                    {
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Catch: "+ ex.Message +". InnerException:" + ex.InnerException.Message, "");
+
+                    }
+
+                }
+
+                if (!String.IsNullOrEmpty(MensajeImportacion))//!MensajeImportacion.Contains("ERROR"))
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Obtuve el mensaje desde el API  controladorArticulo.ImportarActualizarArticulos()", "");
+
+                    Informes_Pedidos inpe = contInforme.obtenerInformePedidoPorId(idInforme);
+
+                    inpe.Estado = 1;
+                    inpe.Observaciones = MensajeImportacion;
+
+                    contInforme.modificarInformePedido(inpe);
+
+                    //modifica el estado y agrega información en el campo Observacion de la tabla INFORMES_PEDIDOS.
+
+                    //BORRA ARCHIVO IMPORTADO
+
+                    this.eliminarArchivoFTP(RutaFTP,NombreArchivo + ".csv");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Excepción en AumentarCostosDS(): " + ex.ToString(), "");
+
+            }
+        }
+
+
+
+        public DataTable UltimoInformePedido()
+        {
+            try
+            {
+                AccesoDB ac = new AccesoDB();
+
+                string Query = "SELECT TOP(1)* FROM Informes_Pedidos where informe = 23 order by id desc";
+                SqlCommand command = new SqlCommand(Query);
+                var Artic = ac.execDT(command);
+                return Artic;
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: " + ex.Message, "");
+                return null;
+            }
+
+        }
+        public DataTable InformePedido()
+        {
+            try
+            {
+                AccesoDB ac = new AccesoDB();
+
+                string Query = "SELECT * FROM Informes_Pedidos where informe = 23 and estado=0";
+                SqlCommand command = new SqlCommand(Query);
+                var Artic = ac.execDT(command);
+                return Artic;
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: " + ex.Message, "");
+                return null;
+            }
+
+        }
+
+        public DataTable EstadoInforme(int id)
+        {
+            try
+            {
+                AccesoDB ac = new AccesoDB();
+
+                string Query = "SELECT * FROM Informes_Pedidos where id=" + id;
+                SqlCommand command = new SqlCommand(Query);
+                var Artic = ac.execDT(command);
+                return Artic;
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: " + ex.Message, "");
+                return null;
+            }
+
+        }
+
+        public DataTable TablaMarcas(String idMarca)
+        {
+            try
+            {
+                AccesoDB ac = new AccesoDB();
+
+                string Query = "SELECT * FROM Marcas where estado = 1 and id=" + idMarca;
+                SqlCommand command = new SqlCommand(Query);
+                var Prov = ac.execDT(command);
+
+                return Prov;
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: " + ex.Message, "");
+                return null;
+            }
+
+        }
+
+        public int ActualizarFecha(int Arti)
+        {
+            try
+            {
+                AccesoDB ac = new AccesoDB();
+                string Query = "UPDATE articulos set modificado='2022-07-21 10:00:01.630' where id=" + Arti;
+                SqlCommand command = new SqlCommand(Query);
+                // var Actualizado = ac.execDT(command);
+
+                return ac.ejecQueryDevuelveInt(command);
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: " + ex.Message, "");
+                return 0;
+            }
+
+        }
+
+        public DataTable BuscarArtiXMarca(int idMarca)
+        {
+            try
+            {
+
+                AccesoDB ac = new AccesoDB();
+
+                string Query = "EXECUTE Gest_BuscarArticulosPorMarca " + idMarca;
+                SqlCommand command = new SqlCommand(Query);
+                var Artic = ac.execDT(command);
+
+                return Artic;
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: " + ex.Message, "");
+                return null;
+            }
+
+
+        }
+
         #endregion
+
+
     }
 }

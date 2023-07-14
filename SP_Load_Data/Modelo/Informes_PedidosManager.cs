@@ -198,6 +198,51 @@ namespace SP_Load_Data.Modelo
             }
             return false;
         }
+
+        public bool EsActualizarCostosDS(Informes_Pedidos informes_Pedidos)
+        {
+
+            try
+            {
+                if (informes_Pedidos.Informe == 23)
+                {
+                    _appLog.LogInfo("Voy a actualizar los precios del archivo ID: " + informes_Pedidos.Id);
+                    return true;
+                }
+                return false;
+
+            }
+            catch (Exception ex)
+            {
+                _appLog.LogInfo("Excepción en EsActualizarCostosDS(): " + ex.ToString());
+                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: " + ex.Message, "");
+                return false;
+            }
+
+        }
+
+        public bool EsImportacionArticulos(Informes_Pedidos informes_Pedidos)
+        {
+
+            try
+            {
+                if (informes_Pedidos.Informe == 24)
+                {
+                    _appLog.LogInfo("Voy a actualizar los datos del archivo correspondiente al ID: " + informes_Pedidos.Id);
+                    return true;
+                }
+                return false;
+
+            }
+            catch (Exception ex)
+            {
+                _appLog.LogInfo("Excepción en EsActualizarCostosDS(): " + ex.ToString());
+                ServicioLoad.CLog.WriteError(ServicioLoad.CLog.SV_FATAL, ServicioLoad.CLog.TAG_ERR, "ERROR CATCH: " + ex.Message, "");
+                return false;
+            }
+
+        }
+
     }
 
 }
