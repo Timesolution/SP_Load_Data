@@ -3171,16 +3171,20 @@ namespace SP_Load_Data
 
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Leo el informe " + IdSolicitud, "");
 
-
                     String[] Fecha = FechaSolicitud.Split(' ');
-
                     FechaSolicitud = Fecha[0];
                     String NewFechaSolicitud = FechaSolicitud.Replace("/", "-");
+                  
                     String dia = DateTime.Today.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
+                    dia = dia.Replace("/", "-");
+
                     String FechaArchivo = DateTime.Today.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
                     FechaArchivo = FechaArchivo.Replace("/", "-");
+
                     DateTime Fecha1 = Convert.ToDateTime(NewFechaSolicitud);
+                    //DateTime Fecha2 = Convert.ToDateTime(FechaArchivo);
                     DateTime Fecha2 = Convert.ToDateTime(dia);
+
                     ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Fecha1: " + Fecha1 + " Fecha2: " + Fecha2, "");
 
 
@@ -3188,6 +3192,10 @@ namespace SP_Load_Data
                     {
                         //Producción:
                         String path = "C:\\Inetpub\\vhosts\\deportshow.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
+                       
+                        //Producción TEST
+                        //String path = "C:\\Inetpub\\vhosts\\deportshowtest.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
+
                         //  var directory = new DirectoryInfo(Settings.Default.rutaDescarga + ip.Id + "\\");
 
                         //Local:
@@ -3209,7 +3217,6 @@ namespace SP_Load_Data
 
                             if (IdSolicitud == IdArchivo)
                             {
-
                                 DataTable estadoinfo = EstadoInforme(IdSolicitud);
 
                                 int estado = 0;
@@ -3225,7 +3232,6 @@ namespace SP_Load_Data
                                         String Marca = "0";
                                         String CostoPorcentaje = "0";
 
-
                                         String[] MarcaCosto = MarcasyCostos[j].Split(',');
 
                                         Marca = MarcaCosto[0];
@@ -3233,9 +3239,6 @@ namespace SP_Load_Data
                                         if (MarcaCosto.Length > 1)
                                         {
                                             CostoPorcentaje = MarcaCosto[1];
-
-
-
 
                                             DataTable Marcas = TablaMarcas(Marca);
                                             bool Pase = false;
@@ -3298,6 +3301,10 @@ namespace SP_Load_Data
                             }
                         }
                     }
+                    else
+                    {
+                        Console.WriteLine("Las fechas no coinciden. Informe BD: " + Fecha1 + ". Hoy: " + Fecha2);
+                    }
 
                 }
             }
@@ -3321,8 +3328,8 @@ namespace SP_Load_Data
                 //1- Descargamos los archivos del ftp
 
                 String RutaFTP = "/httpdocs/Importacion/ImportacionArticulos";
-                String RutaLocalServidor = "C:\\Users\\PC\\Desktop\\Time Solution\\Repositorios_\\SP_LOAD_DATA\\Descarga Archivos\\Importar Articulos\\";
-                //String RutaLocalServidor = "C:\\Users\\Administrator\\Documents\\Servicios TimeSolution\\Servicio Reportes\\LaFuente\\Descarga Archivos\\Importar Articulos\\";
+                //String RutaLocal = "C:\\Users\\PC\\Desktop\\Time Solution\\Repositorios_\\SP_LOAD_DATA\\Descarga Archivos\\Importar Articulos\\";
+                String RutaLocalServidor = "C:\\Users\\Administrator\\Documents\\Servicios TimeSolution\\Servicio Reportes\\LaFuente\\Descarga Archivos\\Importar Articulos\\";
                 bool Directorio = Directory.Exists(RutaLocalServidor);
 
                 if (!Directorio)

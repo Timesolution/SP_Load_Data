@@ -25,7 +25,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ftp://51.222.84.216")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ftp://198.100.155.223")]
         public string FTP {
             get {
                 return ((string)(this["FTP"]));
@@ -43,7 +43,7 @@ namespace SP_Load_Data.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("/httpdocs/Informes")]
+        [global::System.Configuration.DefaultSettingValueAttribute("/httpdocs/Informes/")]
         public string rutaFTP {
             get {
                 return ((string)(this["rutaFTP"]));
@@ -53,10 +53,27 @@ namespace SP_Load_Data.Properties {
             }
         }
         
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("deportshow")]
+        public string User {
+            get {
+                return ((string)(this["User"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Administrator\\Documents\\Servicio DeportShow\\Log\\")]
+        public string Path_Log {
+            get {
+                return ((string)(this["Path_Log"]));
+            }
+        }
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Administrator\\Documents\\Servicios TimeSolution\\Servicio Reportes\\LaFuent" +
-            "e\\Reportes")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Administrator\\Documents\\Servicio DeportShow\\Reportes\\")]
         public string rutaReporte {
             get {
                 return ((string)(this["rutaReporte"]));
@@ -66,29 +83,9 @@ namespace SP_Load_Data.Properties {
             }
         }
         
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("lafuente")]
-        public string User {
-            get {
-                return ((string)(this["User"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Administrator\\Documents\\Servicios TimeSolution\\Servicio Reportes\\LaFuent" +
-            "e\\Log")]
-        public string Path_Log {
-            get {
-                return ((string)(this["Path_Log"]));
-            }
-        }
-        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Administrator\\Documents\\Servicios TimeSolution\\Servicio Reportes\\LaFuent" +
-            "e\\Descarga Archivos")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\Administrator\\Documents\\Servicio DeportShow\\Descarga Archivos\\")]
         public string rutaDescarga {
             get {
                 return ((string)(this["rutaDescarga"]));

@@ -17,8 +17,8 @@ namespace SP_Load_Data
             try
             {
                 //Test
-                //ServicioLoad servicio = new ServicioLoad();
-                //servicio.Inicio();
+               //ServicioLoad servicio = new ServicioLoad();
+               //servicio.Inicio();
 
                 //Produccion
                 ServiceBase[] ServicesToRun;
