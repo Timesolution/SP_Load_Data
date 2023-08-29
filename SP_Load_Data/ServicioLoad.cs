@@ -212,6 +212,10 @@ namespace SP_Load_Data
                     {
                         procesar.ImportarArticulosDesdeCSV(Convert.ToInt32(informePedido.Id),informePedido.NombreInforme,informePedido.Observaciones);
                     }
+                    if (informes_PedidosManager.EsDiferenciaStock(informePedido))
+                    {
+                        procesar.GenerarDiferenciaStock(informePedido);
+                    }
 
                 }
             }

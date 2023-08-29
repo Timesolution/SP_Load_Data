@@ -410,6 +410,7 @@ namespace SP_Load_Data
                     {
                         int marca = infXML.Marca;
                         int grupo = infXML.Grupo;
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Deserialize archivo XML con Id: " + informePedido.Id + "Marca: " + marca + " y Grupo: " + grupo, "");
                         //string rutaCSV = System.Web.HttpContext.Current.Server.MapPath("../ArchivosExportacion/Salida/");
 
                         string archivoCSV = "";
@@ -419,7 +420,10 @@ namespace SP_Load_Data
                         //    Directory.CreateDirectory(rutaCSV);
                         //}
 
-                        cr.generarArchivoExportadorArticulosPrecio(directory.ToString(), marca, grupo, informePedido.NombreInforme);
+                        //cr.generarArchivoExportadorArticulosPrecio(directory.ToString(), marca, grupo, informePedido.NombreInforme);
+
+                        //Este metodo agrega una columna que pidieron en DeportShow
+                        cr.generarArchivoExportadorArticulosPrecioSublista(directory.ToString(), marca, grupo, informePedido.NombreInforme);
 
                     }
                 }
@@ -431,7 +435,6 @@ namespace SP_Load_Data
                 //Subo los archivos al FTP
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a subir el archivo .csv del reporte " + informePedido.Id + " al FTP", "");
                 this.subirArchivosFTP(archivosSubir, Settings.Default.rutaFTP + informePedido.Id + "\\");
-
 
 
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Voy a actualizar el estado del reporte " + informePedido.Id, "");
@@ -687,6 +690,7 @@ namespace SP_Load_Data
 
         public void GenerarReporteDetalleVentas(Informes_Pedidos informePedido)
         {
+            string mensaje = "";
             try
             {
                 controladorFacturacion controlador = new controladorFacturacion();
@@ -727,32 +731,37 @@ namespace SP_Load_Data
 
                         ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a generar archivo .xls con el informe " + informePedido.Id, "");
                         ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta de descarga que voya pasar es: " + Settings.Default.rutaDescarga + informePedido.Id + '/', "");
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta del reporte es: " + Settings.Default.rutaReporte + "CobrosVendedoresR.rdlc", "");
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "La ruta del reporte es: " + Settings.Default.rutaReporte + "DetallesVentas.rdlc", "");
 
-
+                        mensaje = "dtDetalles";
                         DataTable dtDetalles = new DataTable();
 
                         if (tipo > 0)
                         {
                             if (tipo == 1)
                             {
+                                mensaje = "obtenerIngresosBrutosByFecha";
                                 dtDetalles = controlador.obtenerIngresosBrutosByFecha(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
                             }
                             else
                             {
+                                mensaje = "obtenerDetalleVentasPresupuestoByFecha";
                                 dtDetalles = controlador.obtenerDetalleVentasPresupuestoByFecha(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
                             }
 
                         }
                         else
                         {
+                            mensaje = "obtenerDetalleVentasByFecha";
                             dtDetalles = controlador.obtenerDetalleVentasByFecha(fechaD, fechaH, suc, emp, tipo, cliente, tipofact, lista, anuladas, vendedor, formaPago);
                         }
-
+                        mensaje = "obtenerTotalFacturasRango";
                         DataTable dtDatos = controlador.obtenerTotalFacturasRango(fechaD, fechaH, suc, tipo, emp);
 
                         Decimal total = 0;
 
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Voy a cargar los DataSource para el informe: " + informePedido.Id, "");
+                        
                         this.ReportViewer1.ProcessingMode = ProcessingMode.Local;
                         this.ReportViewer1.LocalReport.ReportPath = Settings.Default.rutaReporte + "DetallesVentasR.rdlc";
                         ReportDataSource rds = new ReportDataSource("DetalleFacturas", dtDetalles);
@@ -848,7 +857,7 @@ namespace SP_Load_Data
             }
             catch (Exception ex)
             {
-
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Ocurrio un erro en: " + mensaje,"");
             }
         }
 
@@ -3191,10 +3200,10 @@ namespace SP_Load_Data
                     if (DateTime.Compare(Fecha1, Fecha2) == 0)
                     {
                         //Producción:
-                        String path = "C:\\Inetpub\\vhosts\\deportshow.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
-                       
+                        //String path = "C:\\Inetpub\\vhosts\\deportshow.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
+
                         //Producción TEST
-                        //String path = "C:\\Inetpub\\vhosts\\deportshowtest.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
+                        String path = "C:\\Inetpub\\vhosts\\deportshowtest.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
 
                         //  var directory = new DirectoryInfo(Settings.Default.rutaDescarga + ip.Id + "\\");
 
@@ -3402,6 +3411,95 @@ namespace SP_Load_Data
             }
         }
 
+        
+        public void GenerarDiferenciaStock(Informes_Pedidos ip)
+        {
+            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Entre en GenerarDiferenciaStock", "");
+
+            int idInforme = Convert.ToInt32(ip.Id);
+            string nombreArchivo = ip.NombreInforme;
+            int usuario = Convert.ToInt32(ip.Usuario);
+            int sucursal = Convert.ToInt32(ip.Observaciones);
+            string extension = ".csv";
+            nombreArchivo += extension;
+
+            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "idInforme: " + idInforme + " nombreArchivo: " + nombreArchivo + " Usuario: " + usuario + " Sucursal: " + sucursal, "");
+
+            ControladorInformesEntity contInforme = new ControladorInformesEntity();
+
+            try
+            {
+                //1- Descargamos los archivos del ftp
+                string RutaFTP = "/httpdocs/Informes/";
+                string carpeta = "ArticulosDiferenciasStock";
+                string rutaDescarga = RutaFTP + carpeta;
+
+                //Local
+                //String RutaLocalServidor = "C:\\TimeSolutions\\Repo\\SP_Load_Data\\Descarga Archivos\\ArticulosDiferenciasStock\\";
+                //Produccion
+                String RutaLocalServidor = "C:\\Users\\Administrator\\Documents\\Servicios TimeSolution\\Servicio Reportes\\Deport Show Test\\Descarga Archivos\\ArticulosDiferenciasStock\\";
+
+                bool Directorio = Directory.Exists(RutaLocalServidor);
+
+                if (!Directorio)
+                {
+                    Directory.CreateDirectory(RutaLocalServidor);
+                }
+
+                this.descargarArchivosFTP(rutaDescarga, RutaLocalServidor);
+
+                //2- Leemos y buscamos el archivo en el directorio del servidor/escritorio que pasamos como parametro a esta función
+
+                RutaLocalServidor += nombreArchivo;
+
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "El path es: " + RutaLocalServidor, "");
+
+                String MensajeImportacion = "Estado actualizado por el servicio";
+                bool resultado=false;
+
+                using (FileStream fs = new FileStream(RutaLocalServidor, FileMode.Open, FileAccess.Read))
+                {
+                    StreamReader memoryStream = new StreamReader(fs);
+
+                    //4-lo envíamos a Importar Articulos en el Gestion API
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Paso el archivo " + memoryStream + " hacia el API", "");
+
+                    try
+                    {
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Envío los datos al API IdSucursal: " + sucursal + " IdUsuario:" + usuario, "");
+
+                        resultado = controladorArticulo.GenerarDiferenciasStockEnSucursalDesdeCSV(RutaLocalServidor, sucursal, usuario);
+                    }
+                    catch (Exception ex)
+                    {
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Catch: " + ex.Message + ". InnerException:" + ex.InnerException.Message, "");
+                    }
+                }
+
+                if (resultado)
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Obtuve el resultado desde la API controladorArticulo.GenerarDiferenciasStockEnSucursalDesdeExcel()", "");
+
+                    Informes_Pedidos inpe = contInforme.obtenerInformePedidoPorId(idInforme);
+
+                    inpe.Estado = 1;
+                    inpe.Observaciones = MensajeImportacion;
+
+                    contInforme.modificarInformePedido(inpe);
+
+                    //modifica el estado y agrega información en el campo Observacion de la tabla INFORMES_PEDIDOS.
+
+                    //BORRA ARCHIVO IMPORTADO
+                    this.eliminarArchivoFTP(carpeta, nombreArchivo);
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Eliminé del FTP el archivo: " + nombreArchivo, "");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Excepción en GenerarDiferenciaStock(): " + ex.ToString(), "");
+            }
+        }
 
 
         public DataTable UltimoInformePedido()
