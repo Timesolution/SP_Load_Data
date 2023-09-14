@@ -1284,6 +1284,26 @@ namespace SP_Load_Data
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Ocurrió un error actualizando el estado del Informe Pedido con id " + idInformePedido + Ex.Message, "");
             }
         }
+        public void actualizarEstadoInforme(long idInformePedido, int estado)
+        {
+            try
+            {
+                ControladorInformesEntity contInfEnt = new ControladorInformesEntity();
+                int i = contInfEnt.actualizarEstadoInformePedidoPorId(idInformePedido, estado);
+                if (i > 0)
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Se actualizó el estado del Informe Pedido con id " + idInformePedido + " y con estado: " + estado, "");
+                }
+                else
+                {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "No se actualizó el estado del Informe Pedido con id " + idInformePedido + " y con estado: " + estado, "");
+                }
+            }
+            catch (Exception Ex)
+            {
+                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Ocurrió un error actualizando el estado del Informe Pedido con id " + idInformePedido + " y con estado: " + estado + Ex.Message, "");
+            }
+        }
 
         public void GenerarReporteVentasFiltradas(Informes_Pedidos informePedido)
         {
@@ -3158,27 +3178,23 @@ namespace SP_Load_Data
 
         public void AumentarCostosDS()
         {
-            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Entre en AumentarCostosDS", "");
-
+            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Entre en AumentarCostosDS", "");
+            int IdSolicitud=0;
+            int Articulo = 0;
             try
             {
-
                 String Path = "";
-                //  StreamReader();
                 String FechaSolicitud = string.Empty;
-                int IdSolicitud = 0;
-
-                //controladorInformes ci = new controladorInformes();
-
 
                 DataTable ip = InformePedido();
                 foreach (DataRow dr in ip.Rows)
                 {
-
                     FechaSolicitud = dr["fecha"].ToString();
                     IdSolicitud = Convert.ToInt32(dr["Id"]);
+                    
+                    double cooldown = Convert.ToDouble(dr["Observaciones"]);
 
-                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Leo el informe " + IdSolicitud, "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Leo el informe " + IdSolicitud + " con enfriamiento: "+cooldown, "");
 
                     String[] Fecha = FechaSolicitud.Split(' ');
                     FechaSolicitud = Fecha[0];
@@ -3191,28 +3207,27 @@ namespace SP_Load_Data
                     FechaArchivo = FechaArchivo.Replace("/", "-");
 
                     DateTime Fecha1 = Convert.ToDateTime(NewFechaSolicitud);
-                    //DateTime Fecha2 = Convert.ToDateTime(FechaArchivo);
                     DateTime Fecha2 = Convert.ToDateTime(dia);
 
-                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Fecha1: " + Fecha1 + " Fecha2: " + Fecha2, "");
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Fecha1: " + Fecha1 + " Fecha2: " + Fecha2, "");
 
 
                     if (DateTime.Compare(Fecha1, Fecha2) == 0)
                     {
                         //Producción:
-                        //String path = "C:\\Inetpub\\vhosts\\deportshow.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
+                        String path = "C:\\Inetpub\\vhosts\\deportshow.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
 
                         //Producción TEST
-                        String path = "C:\\Inetpub\\vhosts\\deportshowtest.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
+                        //String path = "C:\\Inetpub\\vhosts\\deportshowtest.com\\httpdocs\\Formularios\\Costos_Aumento\\Actualizacion;" + FechaArchivo + ".txt";
 
                         //  var directory = new DirectoryInfo(Settings.Default.rutaDescarga + ip.Id + "\\");
 
                         //Local:
                         //String path = "C:\\Users\\PC\\Desktop\\Time Solution\\Repositorios_\\Gestion Web\\Gestion Web\\Formularios\\Costos_Aumento\\Actualizacion;" + NewFechaSolicitud + ".txt";
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "El path es: " + path, "");
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "El path es: " + path, "");
                         String[] Archivo = File.ReadAllLines(path);//System.IO.File.ReadLines(@"desktop\\etc\\");
                         String DatosArchivo = string.Empty;
-                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Leí el archivo" + Archivo, "");
+                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Leí el archivo: Actualizacion;" + FechaArchivo + ".txt", "");
 
                         for (int i = 0; i < Archivo.Length; i++)
                         {
@@ -3222,7 +3237,7 @@ namespace SP_Load_Data
 
                             int IdArchivo = Convert.ToInt32(MarcasyCostos[0]);
 
-                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Entre en el primer for. IdArchivo: " + IdArchivo, "");
+                            ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Recorro el archivo buscando una coincidencia con: " + IdSolicitud + ". IdArchivo: " + IdArchivo, "");
 
                             if (IdSolicitud == IdArchivo)
                             {
@@ -3236,6 +3251,10 @@ namespace SP_Load_Data
 
                                 if (estado == 0)
                                 {
+                                    int enActualizacion = 2;
+                                    //Cambiamos el estado del informe a 2 para que no vuelva a entrar
+                                    actualizarEstadoInforme(IdSolicitud, enActualizacion);
+
                                     for (int j = 0; j < MarcasyCostos.Length; j++)
                                     {
                                         String Marca = "0";
@@ -3253,60 +3272,53 @@ namespace SP_Load_Data
                                             bool Pase = false;
                                             int Marc = Convert.ToInt32(Marca);
 
-
                                             foreach (DataRow mr in Marcas.Rows)
                                             {
                                                 Marc = Convert.ToInt32(mr["id"]);
 
                                                 Console.WriteLine("- Comienza a actualizar las Marcas " + mr["marca"].ToString() + ". ID: " + mr["Id"] + " -");
-                                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "- Comienza a actualizar las Marcas " + mr["marca"].ToString() + ". ID: " + mr["Id"] + " -", "");
+                                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "- Comienza a actualizar las Marcas " + mr["marca"].ToString() + ". ID: " + mr["Id"] + " -", "");
 
                                                 DataTable ArticulosTodos = BuscarArtiXMarca(Marc);
 
-                                                int Articulo = 0;
+                                                Articulo = 0;
 
                                                 decimal porcentaje = Convert.ToDecimal(CostoPorcentaje);
-                                                int funciona = 0, funciona2 = 0;
+                                                int resultado = 0, funciona2 = 0;
 
                                                 foreach (DataRow drat in ArticulosTodos.Rows)
                                                 {
                                                     Articulo = Convert.ToInt32(drat["id"]);
 
-                                                    funciona = controladorArticulo.aumentarPrecioPorcentaje(Articulo, porcentaje);
-
+                                                    //funciona = controladorArticulo.aumentarPrecioPorcentaje(Articulo, porcentaje);
+                                                    resultado = controladorArticulo.aumentarPrecioPorcentaje(Articulo, porcentaje, cooldown);
                                                     ActualizarFecha(Articulo);
 
-
-                                                    if (funciona > 0)
+                                                    if (resultado > 0)
                                                     {
-                                                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Actualice el articulo " + Articulo, "");
-
+                                                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Actualice el articulo con ID: " + Articulo, "");
+                                                    }
+                                                    else if (resultado ==0)
+                                                    {
+                                                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "No pasó el tiempo suficiente, el articulo "+ Articulo + " aun está en enfriamiento." , "");
                                                     }
                                                     else
                                                     {
+                                                        ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "No se pudo actualizar el costo porcentaje.", "");
                                                         Console.WriteLine("No se pudo actualizar el costo porcentaje...");
-
                                                     }
-
                                                 }
-                                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Termino de actualizar la Marca N° " + Marca + "", "");
+                                                ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "Termino de actualizar la Marca N° " + Marca + "", "");
 
                                                 Console.WriteLine("Termino de actualizar la Marca N° " + Marca + "");
                                                 Console.WriteLine("...");
                                                 Console.WriteLine("...");
-
-
-
                                             }
 
                                         }
                                     }
-
-
                                 }
                                 actualizarEstadoInforme(IdSolicitud);
-
-
                             }
                         }
                     }
@@ -3314,13 +3326,22 @@ namespace SP_Load_Data
                     {
                         Console.WriteLine("Las fechas no coinciden. Informe BD: " + Fecha1 + ". Hoy: " + Fecha2);
                     }
-
                 }
             }
             catch (Exception ex)
             {
                 ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_ERR, "Excepción en AumentarCostosDS(): " + ex.ToString(), "");
 
+                ControladorInformesEntity contInforme = new ControladorInformesEntity();
+                Informes_Pedidos inpe = contInforme.obtenerInformePedidoPorId(IdSolicitud);
+                string mensaje = "Ocurrió un error modificando el costo para el articulo con ID: " + Articulo + ". No se pudo con el proceso.";
+                inpe.Observaciones = mensaje;
+
+                contInforme.modificarInformePedido(inpe);
+                
+                int falloProceso = 3;
+                //Cambiamos el estado del informe a 3 para que no vuelva a entrar y poder diferenciarlo de los demas informes
+                actualizarEstadoInforme(IdSolicitud, falloProceso);
             }
         }
 
@@ -3436,13 +3457,16 @@ namespace SP_Load_Data
 
                 //Local
                 //String RutaLocalServidor = "C:\\TimeSolutions\\Repo\\SP_Load_Data\\Descarga Archivos\\ArticulosDiferenciasStock\\";
+                //Produccion Testing
+                //String RutaLocalServidor = "C:\\Users\\Administrator\\Documents\\Servicios TimeSolution\\Servicio Reportes\\Deport Show Test\\Descarga Archivos\\ArticulosDiferenciasStock\\";
                 //Produccion
-                String RutaLocalServidor = "C:\\Users\\Administrator\\Documents\\Servicios TimeSolution\\Servicio Reportes\\Deport Show Test\\Descarga Archivos\\ArticulosDiferenciasStock\\";
+                String RutaLocalServidor = "C:\\Users\\Administrator\\Documents\\Servicios TimeSolution\\Servicio Reportes\\Deport Show\\Descarga Archivos\\ArticulosDiferenciasStock\\";
 
                 bool Directorio = Directory.Exists(RutaLocalServidor);
 
                 if (!Directorio)
                 {
+                    ServicioLoad.CLog.Write(ServicioLoad.CLog.SV_SYS0, ServicioLoad.CLog.TAG_IN, "No existe el path: " + RutaLocalServidor + ". Voy a crearlo", "");
                     Directory.CreateDirectory(RutaLocalServidor);
                 }
 
@@ -3583,7 +3607,7 @@ namespace SP_Load_Data
             try
             {
                 AccesoDB ac = new AccesoDB();
-                string Query = "UPDATE articulos set modificado='2022-07-21 10:00:01.630' where id=" + Arti;
+                string Query = "UPDATE articulos set modificado=GETDATE() where id=" + Arti;
                 SqlCommand command = new SqlCommand(Query);
                 // var Actualizado = ac.execDT(command);
 
